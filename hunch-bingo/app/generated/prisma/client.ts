@@ -44,3 +44,8 @@ export { Prisma }
  * 
  */
 export type OddsDifficulty = Prisma.OddsDifficultyModel
+/**
+ * Model SportEvent
+ * 
+ */
+export type SportEvent = Prisma.SportEventModel

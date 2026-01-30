@@ -51,7 +51,8 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  OddsDifficulty: 'OddsDifficulty'
+  OddsDifficulty: 'OddsDifficulty',
+  SportEvent: 'SportEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -78,6 +79,16 @@ export const OddsDifficultyScalarFieldEnum = {
 } as const
 
 export type OddsDifficultyScalarFieldEnum = (typeof OddsDifficultyScalarFieldEnum)[keyof typeof OddsDifficultyScalarFieldEnum]
+
+
+export const SportEventScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  startTime: 'startTime',
+  externalId: 'externalId'
+} as const
+
+export type SportEventScalarFieldEnum = (typeof SportEventScalarFieldEnum)[keyof typeof SportEventScalarFieldEnum]
 
 
 export const SortOrder = {

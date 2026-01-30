@@ -9,4 +9,5 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/OddsDifficulty'
+export type * from './models/SportEvent'
 export type * from './commonInputTypes'

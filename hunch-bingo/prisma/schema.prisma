@@ -19,3 +19,10 @@ model OddsDifficulty {
   minOdd Float
   maxOdd Float
 }
+
+model SportEvent {
+  id         Int      @id @default(autoincrement())
+  name       String
+  startTime  DateTime
+  externalId Int
+}

@@ -384,7 +384,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  OddsDifficulty: 'OddsDifficulty'
+  OddsDifficulty: 'OddsDifficulty',
+  SportEvent: 'SportEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -400,7 +401,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "oddsDifficulty"
+    modelProps: "oddsDifficulty" | "sportEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -478,6 +479,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SportEvent: {
+      payload: Prisma.$SportEventPayload<ExtArgs>
+      fields: Prisma.SportEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SportEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SportEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>
+        }
+        findFirst: {
+          args: Prisma.SportEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SportEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>
+        }
+        findMany: {
+          args: Prisma.SportEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>[]
+        }
+        create: {
+          args: Prisma.SportEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>
+        }
+        createMany: {
+          args: Prisma.SportEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SportEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>[]
+        }
+        delete: {
+          args: Prisma.SportEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>
+        }
+        update: {
+          args: Prisma.SportEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.SportEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SportEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SportEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.SportEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SportEventPayload>
+        }
+        aggregate: {
+          args: Prisma.SportEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSportEvent>
+        }
+        groupBy: {
+          args: Prisma.SportEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SportEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SportEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SportEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -525,6 +600,16 @@ export const OddsDifficultyScalarFieldEnum = {
 } as const
 
 export type OddsDifficultyScalarFieldEnum = (typeof OddsDifficultyScalarFieldEnum)[keyof typeof OddsDifficultyScalarFieldEnum]
+
+
+export const SportEventScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  startTime: 'startTime',
+  externalId: 'externalId'
+} as const
+
+export type SportEventScalarFieldEnum = (typeof SportEventScalarFieldEnum)[keyof typeof SportEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -588,6 +673,20 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Float[]'
  */
 export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 /**
@@ -686,6 +785,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   oddsDifficulty?: Prisma.OddsDifficultyOmit
+  sportEvent?: Prisma.SportEventOmit
 }
 
 /* Types for Logging */
