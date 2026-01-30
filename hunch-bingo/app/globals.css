@@ -1,22 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #ffffff;
+  --primary: #8b5cf6;
+  --secondary: #06b6d4;
+  --accent: #ec4899;
+  --bg-secondary: #0f172a;
+  --card: #1e293b;
+  --text-secondary: #d8b4fe;
+  --text-muted: #cbd5e1;
+  --text-subtle: #94a3b8;
+  --status-win: #22c55e;
+  --status-loss: #ef4444;
+  --status-draft: #64748b;
+  --status-live: #10b981;
+  --status-completed: #3b82f6;
+  --border: color-mix(in srgb, #8b5cf6 20%, transparent);
+  --border-hover: color-mix(in srgb, #8b5cf6 40%, transparent);
+  --glow: rgba(139, 92, 246, 0.3);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-card: var(--card);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-status-win: var(--status-win);
+  --color-status-loss: var(--status-loss);
+  --color-status-draft: var(--status-draft);
+  --color-status-live: var(--status-live);
+  --color-status-completed: var(--status-completed);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-glow: var(--glow);
+  --shadow-glow: 0 0 24px var(--glow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
