@@ -106,6 +106,7 @@ model GameSquareResult {
   gameSheet     GameSheetResult @relation(fields: [gameSheetId], references: [id])
   position      Int             // 1-9
   marketId      Int
+  marketName    String?
   outcomeId     Int?
   outcomeName   String?
   capturedPrice Float?

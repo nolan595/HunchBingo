@@ -77,13 +77,14 @@ export async function fetchEvent(
   const params = new URLSearchParams();
   if (oddsResults) params.set("oddsResults", "true");
 
-  const url = `${BASE}/v2/${LANG}/events/by-id/${externalEventId}${params.size ? `?${params}` : ""}`;
+  const url = `${BASE}/v2/${LANG}/events/${externalEventId}${params.size ? `?${params}` : ""}`;
 
   const res = await fetch(url, {
     headers: { accept: "application/json" },
     next: { revalidate: 0 },
   });
 
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Offer API error: ${res.status}`);
 
   const json = (await res.json()) as OfferApiResponse;

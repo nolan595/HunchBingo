@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { lockPrices } from "@/lib/game-engine";
 import { fetchEvent, findOutcomeForMarket } from "@/lib/offer-api";
 import { evaluateConnect3 } from "@/lib/connect3";
 import type { SquareStatus } from "@/app/generated/prisma";
@@ -11,7 +12,6 @@ export async function advanceGameStatus(
   currentStatus: string
 ) {
   const next: Record<string, string> = {
-    DRAFT: "PENDING",
     PENDING: "OPEN",
     OPEN: "CLOSED",
   };
@@ -29,58 +29,6 @@ export async function advanceGameStatus(
   }
 
   revalidatePath(`/games/${gameId}`);
-}
-
-async function lockPrices(gameId: number) {
-  const game = await prisma.game.findUniqueOrThrow({
-    where: { id: gameId },
-    include: { event: true },
-  });
-
-  const event = await fetchEvent(game.event.externalEventId);
-  if (!event) throw new Error("Event not found in Offer API");
-
-  const odds = event.odds ?? [];
-
-  const sheets = await prisma.bingoSheet.findMany({
-    include: {
-      squares: { include: { difficulty: true } },
-    },
-  });
-
-  await prisma.$transaction(async (tx) => {
-    await tx.game.update({
-      where: { id: gameId },
-      data: { status: "OPEN" },
-    });
-
-    for (const sheet of sheets) {
-      const gameSheet = await tx.gameSheetResult.create({
-        data: { gameId, sheetId: sheet.id },
-      });
-
-      for (const square of sheet.squares) {
-        const match = findOutcomeForMarket(
-          odds,
-          square.marketId,
-          square.difficulty.oddsMin,
-          square.difficulty.oddsMax
-        );
-
-        await tx.gameSquareResult.create({
-          data: {
-            gameSheetId: gameSheet.id,
-            position: square.position,
-            marketId: square.marketId,
-            outcomeId: match?.outcomeId ?? null,
-            outcomeName: match?.name ?? null,
-            capturedPrice: match?.price ?? null,
-            status: match ? "PENDING" : "NO_MATCH",
-          },
-        });
-      }
-    }
-  });
 }
 
 export async function triggerResulting(gameId: number) {

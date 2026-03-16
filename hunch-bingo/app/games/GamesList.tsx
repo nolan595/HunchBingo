@@ -16,6 +16,7 @@ import {
 import { createGame, deleteGame } from "./actions";
 import type { Game, ExternalEvent } from "@/app/generated/prisma";
 import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 type GameWithEvent = Game & { event: ExternalEvent };
 
@@ -47,6 +48,8 @@ function CreateGameDialog({
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [openTime, setOpenTime] = useState("");
+  const [closeTime, setCloseTime] = useState("");
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -94,12 +97,14 @@ function CreateGameDialog({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="openTime">Open Time</Label>
-          <Input id="openTime" name="openTime" type="datetime-local" required />
+          <Label>Open Time</Label>
+          <DateTimePicker value={openTime} onChange={setOpenTime} placeholder="Pick open time…" />
+          <input type="hidden" name="openTime" value={openTime} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="closeTime">Close Time</Label>
-          <Input id="closeTime" name="closeTime" type="datetime-local" required />
+          <Label>Close Time</Label>
+          <DateTimePicker value={closeTime} onChange={setCloseTime} placeholder="Pick close time…" />
+          <input type="hidden" name="closeTime" value={closeTime} />
         </div>
       </div>
       {error && (

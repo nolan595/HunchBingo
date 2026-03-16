@@ -13,7 +13,7 @@ export async function createGame(formData: FormData) {
   if (closeTime <= openTime) throw new Error("Close time must be after open time");
 
   await prisma.game.create({
-    data: { name, eventId, openTime, closeTime, status: "DRAFT" },
+    data: { name, eventId, openTime, closeTime, status: "PENDING" },
   });
 
   revalidatePath("/games");

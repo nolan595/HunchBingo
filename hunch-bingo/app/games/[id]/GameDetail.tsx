@@ -43,8 +43,7 @@ const STATUS_VARIANTS: Record<
 };
 
 const NEXT_ACTION_LABELS: Record<string, string> = {
-  DRAFT: "Publish Round",
-  PENDING: "Open Round (Lock Prices)",
+  PENDING: "Open Early (Lock Prices)",
   OPEN: "Close Round",
 };
 
@@ -57,8 +56,11 @@ function SquareCell({ sq }: { sq: SquareWithResult }) {
       <div className={`${base} border-emerald-500/30 bg-emerald-500/[0.06]`}>
         <CheckCircle2 className="h-4 w-4 text-emerald-400" />
         <p className="text-xs font-mono font-bold text-emerald-300">{sq.marketId}</p>
+        {sq.marketName && (
+          <p className="text-[10px] text-emerald-600 leading-tight">{sq.marketName}</p>
+        )}
         {sq.outcomeName && (
-          <p className="text-[10px] text-emerald-500">{sq.outcomeName}</p>
+          <p className="text-[10px] font-medium text-emerald-400">{sq.outcomeName}</p>
         )}
         {sq.capturedPrice && (
           <p className="text-[10px] text-emerald-600">{sq.capturedPrice.toFixed(2)}</p>
@@ -72,8 +74,11 @@ function SquareCell({ sq }: { sq: SquareWithResult }) {
       <div className={`${base} border-red-500/30 bg-red-500/[0.06]`}>
         <XCircle className="h-4 w-4 text-red-400" />
         <p className="text-xs font-mono font-bold text-red-300">{sq.marketId}</p>
+        {sq.marketName && (
+          <p className="text-[10px] text-red-600 leading-tight">{sq.marketName}</p>
+        )}
         {sq.outcomeName && (
-          <p className="text-[10px] text-red-500">{sq.outcomeName}</p>
+          <p className="text-[10px] font-medium text-red-400">{sq.outcomeName}</p>
         )}
         {sq.capturedPrice && (
           <p className="text-[10px] text-red-600">{sq.capturedPrice.toFixed(2)}</p>
@@ -97,8 +102,11 @@ function SquareCell({ sq }: { sq: SquareWithResult }) {
     <div className={`${base} border-blue-500/20 bg-blue-500/[0.05]`}>
       <Clock className="h-4 w-4 text-blue-500" />
       <p className="text-xs font-mono font-bold text-blue-300">{sq.marketId}</p>
+      {sq.marketName && (
+        <p className="text-[10px] text-blue-600 leading-tight">{sq.marketName}</p>
+      )}
       {sq.outcomeName && (
-        <p className="text-[10px] text-blue-500">{sq.outcomeName}</p>
+        <p className="text-[10px] font-medium text-blue-400">{sq.outcomeName}</p>
       )}
       {sq.capturedPrice && (
         <p className="text-[10px] text-blue-600">{sq.capturedPrice.toFixed(2)}</p>
@@ -161,7 +169,7 @@ export function GameDetail({ game }: { game: GameWithAll }) {
     });
   }
 
-  const canAdvance = ["DRAFT", "PENDING", "OPEN"].includes(game.status);
+  const canAdvance = ["PENDING", "OPEN"].includes(game.status);
   const canResult = game.status === "CLOSED";
   const showResults = ["OPEN", "CLOSED", "COMPLETED"].includes(game.status);
 
