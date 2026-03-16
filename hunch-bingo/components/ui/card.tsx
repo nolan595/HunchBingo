@@ -1,38 +1,36 @@
 import * as React from "react";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
-export function Card({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
+const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
     <div
+      ref={ref}
+      className={cn("rounded-lg border border-zinc-200 bg-white shadow-sm", className)}
       {...props}
-      className={cn(
-        "rounded-xl bg-slate-900/50 border border-purple-500/20 backdrop-blur-sm hover:border-purple-500/40 transition-all",
-        className
-      )}
     />
-  );
-}
+  )
+);
+Card.displayName = "Card";
 
-export function CardHeader({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn("p-5 pb-3", className)} />;
-}
+const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
+  )
+);
+CardHeader.displayName = "CardHeader";
 
-export function CardTitle({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn("font-semibold", className)} />;
-}
+const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3 ref={ref} className={cn("font-semibold leading-none tracking-tight", className)} {...props} />
+  )
+);
+CardTitle.displayName = "CardTitle";
 
-export function CardContent({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn("p-5 pt-0", className)} />;
-}
+const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  )
+);
+CardContent.displayName = "CardContent";
+
+export { Card, CardHeader, CardTitle, CardContent };

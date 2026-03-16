@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../app/generated/prisma"
 }
 
@@ -14,15 +8,108 @@ datasource db {
 }
 
 model OddsDifficulty {
-  id     Int    @id @default(autoincrement())
-  name   String
-  minOdd Float
-  maxOdd Float
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  oddsMin   Float
+  oddsMax   Float
+  createdAt DateTime @default(now())
+
+  squares BingoSheetSquare[]
+
+  @@map("odds_difficulties")
 }
 
-model SportEvent {
-  id         Int      @id @default(autoincrement())
-  name       String
-  startTime  DateTime
-  externalId Int
+model BingoSheet {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+
+  squares          BingoSheetSquare[]
+  gameSheetResults GameSheetResult[]
+
+  @@map("bingo_sheets")
+}
+
+model BingoSheetSquare {
+  id           Int            @id @default(autoincrement())
+  sheetId      Int
+  sheet        BingoSheet     @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  position     Int            // 1-9
+  marketId     Int
+  difficultyId Int
+  difficulty   OddsDifficulty @relation(fields: [difficultyId], references: [id])
+
+  @@unique([sheetId, position])
+  @@map("bingo_sheet_squares")
+}
+
+model ExternalEvent {
+  id              Int      @id @default(autoincrement())
+  name            String
+  externalEventId String   @unique
+  createdAt       DateTime @default(now())
+
+  games Game[]
+
+  @@map("external_events")
+}
+
+enum GameStatus {
+  DRAFT
+  PENDING
+  OPEN
+  CLOSED
+  COMPLETED
+}
+
+model Game {
+  id        Int           @id @default(autoincrement())
+  name      String
+  eventId   Int
+  event     ExternalEvent @relation(fields: [eventId], references: [id])
+  status    GameStatus    @default(DRAFT)
+  openTime  DateTime
+  closeTime DateTime
+  createdAt DateTime      @default(now())
+
+  gameSheetResults GameSheetResult[]
+
+  @@map("games")
+}
+
+model GameSheetResult {
+  id          Int        @id @default(autoincrement())
+  gameId      Int
+  game        Game       @relation(fields: [gameId], references: [id])
+  sheetId     Int
+  sheet       BingoSheet @relation(fields: [sheetId], references: [id])
+  connect3    Boolean?
+  score       Int?
+  completedAt DateTime?
+
+  squares GameSquareResult[]
+
+  @@unique([gameId, sheetId])
+  @@map("game_sheet_results")
+}
+
+enum SquareStatus {
+  PENDING
+  WON
+  LOST
+  NO_MATCH
+}
+
+model GameSquareResult {
+  id            Int             @id @default(autoincrement())
+  gameSheetId   Int
+  gameSheet     GameSheetResult @relation(fields: [gameSheetId], references: [id])
+  position      Int             // 1-9
+  marketId      Int
+  outcomeId     Int?
+  outcomeName   String?
+  capturedPrice Float?
+  status        SquareStatus    @default(PENDING)
+
+  @@map("game_square_results")
 }

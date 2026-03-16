@@ -1,10 +1,5 @@
-'use client'
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { redirect } from "next/navigation";
+
 export default function Home() {
-  const isMobile =  useIsMobile();
-  return (
-    <div>
-      {isMobile ? "📱 Mobile view" : "🖥️ Desktop view"}
-    </div>
-  );
+  redirect("/games");
 }
