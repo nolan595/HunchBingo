@@ -13,13 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { createGame, deleteGame } from "./actions";
 import type { Game, ExternalEvent } from "@/app/generated/prisma";
 import { Plus, Trash2, ArrowRight } from "lucide-react";
@@ -78,9 +71,9 @@ function CreateGameDialog({
       <div className="space-y-1.5">
         <Label htmlFor="eventId">Event</Label>
         {events.length === 0 ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-slate-500">
             No events registered.{" "}
-            <Link href="/events" className="text-blue-600 underline">
+            <Link href="/events" className="text-blue-400 underline">
               Add one first
             </Link>
           </p>
@@ -88,11 +81,11 @@ function CreateGameDialog({
           <select
             name="eventId"
             required
-            className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            className="flex h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
           >
-            <option value="">Select an event…</option>
+            <option value="" className="bg-[#0e1520]">Select an event…</option>
             {events.map((ev) => (
-              <option key={ev.id} value={ev.id}>
+              <option key={ev.id} value={ev.id} className="bg-[#0e1520]">
                 {ev.name}
               </option>
             ))}
@@ -109,7 +102,11 @@ function CreateGameDialog({
           <Input id="closeTime" name="closeTime" type="datetime-local" required />
         </div>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
@@ -141,8 +138,8 @@ export function GamesList({
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Games</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <h1 className="text-xl font-semibold text-slate-100 tracking-tight">Games</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
             Simulation rounds tied to real sport events
           </p>
         </div>
@@ -164,39 +161,39 @@ export function GamesList({
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+      <div className="rounded-xl border border-white/[0.07] overflow-hidden bg-[#0e1520]/60">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 border-b border-zinc-200">
+          <thead className="border-b border-white/[0.07] bg-black/20">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Event</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Status</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Open</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Close</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Name</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Event</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Status</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Open</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Close</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-white/[0.04]">
             {games.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">
+                <td colSpan={6} className="px-4 py-12 text-center text-slate-600">
                   No games yet
                 </td>
               </tr>
             )}
             {games.map((g) => (
-              <tr key={g.id} className="hover:bg-zinc-50">
-                <td className="px-4 py-3 font-medium">{g.name}</td>
-                <td className="px-4 py-3 text-zinc-600">{g.event.name}</td>
+              <tr key={g.id} className="hover:bg-white/[0.02] transition-colors">
+                <td className="px-4 py-3 font-medium text-slate-200">{g.name}</td>
+                <td className="px-4 py-3 text-slate-400">{g.event.name}</td>
                 <td className="px-4 py-3">
                   <Badge variant={STATUS_VARIANTS[g.status]}>
                     {STATUS_LABELS[g.status]}
                   </Badge>
                 </td>
-                <td className="px-4 py-3 text-zinc-500 text-xs">
+                <td className="px-4 py-3 text-slate-500 text-xs font-mono">
                   {new Date(g.openTime).toLocaleString()}
                 </td>
-                <td className="px-4 py-3 text-zinc-500 text-xs">
+                <td className="px-4 py-3 text-slate-500 text-xs font-mono">
                   {new Date(g.closeTime).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
@@ -210,7 +207,7 @@ export function GamesList({
                       size="icon"
                       variant="ghost"
                       onClick={() => handleDelete(g.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-500/60 hover:text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

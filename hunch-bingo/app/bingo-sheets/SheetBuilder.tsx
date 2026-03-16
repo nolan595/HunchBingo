@@ -90,31 +90,31 @@ export function SheetBuilder({ difficulties }: Props) {
       </div>
 
       <div>
-        <p className="text-sm font-medium text-zinc-700 mb-3">
+        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-3">
           Grid (positions 1–9)
         </p>
         <div className="grid grid-cols-3 gap-3">
           {squares.map((sq, i) => (
             <div
               key={i}
-              className="border border-zinc-200 rounded-lg p-3 bg-white space-y-2"
+              className="border border-white/[0.08] rounded-xl p-3 bg-white/[0.02] space-y-2.5 hover:border-white/[0.14] transition-colors"
             >
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+              <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">
                 Square {i + 1}
               </p>
               <div className="space-y-1">
-                <Label className="text-xs">Market ID</Label>
+                <Label className="text-[10px]">Market ID</Label>
                 <Input
                   type="number"
                   min={1}
                   value={sq.marketId}
                   onChange={(e) => updateSquare(i, "marketId", e.target.value)}
                   placeholder="e.g. 547"
-                  className="h-8 text-sm"
+                  className="h-8 text-sm font-mono"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Difficulty</Label>
+                <Label className="text-[10px]">Difficulty</Label>
                 <Select
                   value={sq.difficultyId}
                   onValueChange={(v) => updateSquare(i, "difficultyId", v)}
@@ -137,7 +137,7 @@ export function SheetBuilder({ difficulties }: Props) {
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
           {error}
         </p>
       )}

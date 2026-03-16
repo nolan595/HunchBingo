@@ -73,7 +73,11 @@ function DifficultyForm({
           />
         </div>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
@@ -100,8 +104,10 @@ export function DifficultyManager({ difficulties }: Props) {
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Difficulties</h1>
-          <p className="text-sm text-zinc-500 mt-1">Define odds ranges for bingo square difficulty tiers</p>
+          <h1 className="text-xl font-semibold text-slate-100 tracking-tight">Difficulties</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Define odds ranges for bingo square difficulty tiers
+          </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
@@ -121,31 +127,31 @@ export function DifficultyManager({ difficulties }: Props) {
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+      <div className="rounded-xl border border-white/[0.07] overflow-hidden bg-[#0e1520]/60">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 border-b border-zinc-200">
+          <thead className="border-b border-white/[0.07] bg-black/20">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Odds Min</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Odds Max</th>
-              <th className="text-left px-4 py-3 font-medium text-zinc-600">Created</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Name</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Odds Min</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Odds Max</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Created</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-white/[0.04]">
             {difficulties.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
+                <td colSpan={5} className="px-4 py-12 text-center text-slate-600">
                   No difficulty tiers yet
                 </td>
               </tr>
             )}
             {difficulties.map((d) => (
-              <tr key={d.id} className="hover:bg-zinc-50">
-                <td className="px-4 py-3 font-medium">{d.name}</td>
-                <td className="px-4 py-3 text-zinc-600">{d.oddsMin.toFixed(2)}</td>
-                <td className="px-4 py-3 text-zinc-600">{d.oddsMax.toFixed(2)}</td>
-                <td className="px-4 py-3 text-zinc-400">
+              <tr key={d.id} className="hover:bg-white/[0.02] transition-colors">
+                <td className="px-4 py-3 font-medium text-slate-200">{d.name}</td>
+                <td className="px-4 py-3 text-slate-400 font-mono">{d.oddsMin.toFixed(2)}</td>
+                <td className="px-4 py-3 text-slate-400 font-mono">{d.oddsMax.toFixed(2)}</td>
+                <td className="px-4 py-3 text-slate-600 text-xs font-mono">
                   {new Date(d.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3">
@@ -161,7 +167,7 @@ export function DifficultyManager({ difficulties }: Props) {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleDelete(d.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-500/60 hover:text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

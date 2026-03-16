@@ -12,15 +12,15 @@ export default async function NewBingoSheetPage() {
     <div>
       <Link
         href="/bingo-sheets"
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 mb-6"
+        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6"
       >
         <ChevronLeft className="h-4 w-4" /> Back to sheets
       </Link>
-      <h1 className="text-2xl font-bold text-zinc-900 mb-6">New Bingo Sheet</h1>
+      <h1 className="text-xl font-semibold text-slate-100 tracking-tight mb-6">New Bingo Sheet</h1>
       {difficulties.length === 0 ? (
-        <p className="text-zinc-500">
+        <p className="text-slate-500">
           You need at least one difficulty tier before creating a sheet.{" "}
-          <Link href="/difficulties" className="text-blue-600 underline">
+          <Link href="/difficulties" className="text-blue-400 underline">
             Create one now
           </Link>
         </p>

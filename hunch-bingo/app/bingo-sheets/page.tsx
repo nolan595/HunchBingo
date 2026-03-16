@@ -19,8 +19,8 @@ export default async function BingSheetsPage() {
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Bingo Sheets</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <h1 className="text-xl font-semibold text-slate-100 tracking-tight">Bingo Sheets</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
             Reusable 3×3 templates used across all games
           </p>
         </div>

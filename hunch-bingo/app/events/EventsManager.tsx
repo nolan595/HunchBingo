@@ -54,7 +54,7 @@ function Toggle({
       onClick={onChange}
       className={cn(
         "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none disabled:opacity-40 disabled:cursor-not-allowed",
-        active ? "bg-green-500" : "bg-zinc-200"
+        active ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" : "bg-white/[0.1]"
       )}
     >
       <span
@@ -80,7 +80,7 @@ function PageButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex h-7 w-7 items-center justify-center rounded border border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      className="flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-slate-500 hover:bg-white/[0.07] hover:text-slate-300 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
     >
       {children}
     </button>
@@ -121,7 +121,6 @@ export function EventsManager({ registeredEvents }: Props) {
   const from = filtered.length === 0 ? 0 : page * PAGE_SIZE + 1;
   const to = Math.min((page + 1) * PAGE_SIZE, filtered.length);
 
-  // Reset page when search changes
   useEffect(() => setPage(0), [search]);
 
   const fetchEvents = useCallback((d: string) => {
@@ -138,7 +137,6 @@ export function EventsManager({ registeredEvents }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-load on mount
   useEffect(() => {
     fetchEvents(date);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -151,7 +149,6 @@ export function EventsManager({ registeredEvents }: Props) {
 
     setToggling((prev) => new Set([...prev, event.eventId]));
 
-    // Optimistic update
     setActiveIds((prev) => {
       const next = new Set(prev);
       if (isActive) next.delete(externalId);
@@ -167,7 +164,6 @@ export function EventsManager({ registeredEvents }: Props) {
         await registerEvent(externalId, event.matchName);
       }
     } catch {
-      // Revert on failure
       setActiveIds((prev) => {
         const next = new Set(prev);
         if (isActive) next.add(externalId);
@@ -186,27 +182,27 @@ export function EventsManager({ registeredEvents }: Props) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900">Events</h1>
-        <p className="text-sm text-zinc-500 mt-1">Soccer matches · sport type 5</p>
+        <h1 className="text-xl font-semibold text-slate-100 tracking-tight">Events</h1>
+        <p className="text-sm text-slate-500 mt-0.5">Soccer matches · sport type 5</p>
       </div>
 
       {error && (
-        <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+        <div className="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-white/[0.07] bg-[#0e1520]/60 overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.07] bg-black/10">
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600 pointer-events-none" />
             <input
               type="text"
               placeholder="Search event"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 text-sm border border-zinc-200 rounded-lg bg-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full h-9 pl-9 pr-3 text-sm border border-white/[0.1] rounded-lg bg-white/[0.04] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
             />
           </div>
           <div className="relative">
@@ -214,14 +210,14 @@ export function EventsManager({ registeredEvents }: Props) {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="h-9 pl-3 pr-9 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-200 cursor-pointer"
+              className="h-9 pl-3 pr-9 text-sm border border-white/[0.1] rounded-lg bg-white/[0.04] text-slate-300 focus:outline-none focus:border-blue-500/50 cursor-pointer"
             />
-            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 pointer-events-none" />
+            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600 pointer-events-none" />
           </div>
           <button
             onClick={() => fetchEvents(date)}
             disabled={loading}
-            className="h-9 px-4 text-sm font-medium rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+            className="h-9 px-4 text-sm font-medium rounded-lg border border-white/[0.1] bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200 disabled:opacity-50 transition-colors flex items-center gap-1.5"
           >
             {loading ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -234,40 +230,40 @@ export function EventsManager({ registeredEvents }: Props) {
 
         {/* Table body */}
         {loading ? (
-          <div className="flex items-center justify-center gap-2 py-20 text-zinc-400 text-sm">
+          <div className="flex items-center justify-center gap-2 py-20 text-slate-600 text-sm">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading matches…
           </div>
         ) : events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20 text-zinc-400">
-            <Calendar className="h-10 w-10 text-zinc-200" />
+          <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-600">
+            <Calendar className="h-10 w-10 text-white/[0.05]" />
             <p className="text-sm">No soccer matches found for this date</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-100">
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400">
+              <tr className="border-b border-white/[0.07]">
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
                   Event name
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400">
-                  Home Team name
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Home
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400">
-                  Away Team name
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Away
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400">
-                  Start Date
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Start
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-400">
-                  Tournament name
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Tournament
                 </th>
-                <th className="px-4 py-3 text-xs font-medium text-zinc-400 text-right">
-                  Select for the game
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500 text-right">
+                  Select
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-white/[0.04]">
               {pageEvents.map((e) => {
                 const { home, away } = parseTeams(e);
                 const isActive = activeIds.has(String(e.eventId));
@@ -275,12 +271,12 @@ export function EventsManager({ registeredEvents }: Props) {
                 return (
                   <tr
                     key={e.eventId}
-                    className="hover:bg-zinc-50/60 transition-colors"
+                    className="hover:bg-white/[0.02] transition-colors"
                   >
-                    <td className="px-4 py-3 text-zinc-800">{e.matchName}</td>
-                    <td className="px-4 py-3 text-zinc-600">{home}</td>
-                    <td className="px-4 py-3 text-zinc-600">{away}</td>
-                    <td className="px-4 py-3 text-zinc-600 whitespace-nowrap">
+                    <td className="px-4 py-3 text-slate-300">{e.matchName}</td>
+                    <td className="px-4 py-3 text-slate-400">{home}</td>
+                    <td className="px-4 py-3 text-slate-400">{away}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs font-mono whitespace-nowrap">
                       {new Date(e.matchDate).toLocaleString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -289,9 +285,9 @@ export function EventsManager({ registeredEvents }: Props) {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-zinc-500">
+                    <td className="px-4 py-3 text-slate-500 text-xs">
                       {e.tournamentName ?? (
-                        <span className="text-zinc-300">ID: {e.tournamentId}</span>
+                        <span className="text-slate-700">ID: {e.tournamentId}</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -312,7 +308,7 @@ export function EventsManager({ registeredEvents }: Props) {
 
         {/* Pagination */}
         {!loading && filtered.length > 0 && (
-          <div className="flex items-center justify-center gap-1.5 px-4 py-3 border-t border-zinc-100">
+          <div className="flex items-center justify-center gap-1.5 px-4 py-3 border-t border-white/[0.07]">
             <PageButton onClick={() => setPage(0)} disabled={page === 0}>
               <ChevronsLeft className="h-3 w-3" />
             </PageButton>
@@ -322,8 +318,8 @@ export function EventsManager({ registeredEvents }: Props) {
             >
               <ChevronLeft className="h-3 w-3" />
             </PageButton>
-            <span className="px-3 text-sm text-zinc-500 select-none">
-              {from} – {to} of {filtered.length}
+            <span className="px-3 text-sm text-slate-500 select-none font-mono">
+              {from}–{to} of {filtered.length}
             </span>
             <PageButton
               onClick={() => setPage((p) => p + 1)}
