@@ -5,298 +5,194 @@ import { getEventsByDate, registerEvent, deleteEvent } from "./actions";
 import type { ExternalEvent } from "@/app/generated/prisma";
 import type { EventsByDateItem } from "@/lib/offer-api";
 import {
-  Search,
-  Loader2,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
+  Search, Loader2, Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
-
 type Props = { registeredEvents: ExternalEvent[] };
 
 function parseTeams(item: EventsByDateItem): { home: string; away: string } {
-  if (item.homeTeamName && item.awayTeamName) {
-    return { home: item.homeTeamName, away: item.awayTeamName };
-  }
+  if (item.homeTeamName && item.awayTeamName) return { home: item.homeTeamName, away: item.awayTeamName };
   const name = item.matchName;
   for (const sep of ["·", " - ", " vs "]) {
     const idx = name.indexOf(sep);
-    if (idx !== -1) {
-      return {
-        home: name.slice(0, idx).trim(),
-        away: name.slice(idx + sep.length).trim(),
-      };
-    }
+    if (idx !== -1) return { home: name.slice(0, idx).trim(), away: name.slice(idx + sep.length).trim() };
   }
   return { home: name, away: "—" };
 }
 
-function Toggle({
-  active,
-  onChange,
-  disabled,
-}: {
-  active: boolean;
-  onChange: () => void;
-  disabled: boolean;
-}) {
+function Toggle({ active, onChange, disabled }: { active: boolean; onChange: () => void; disabled: boolean }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={active}
-      disabled={disabled}
-      onClick={onChange}
+    <button type="button" role="switch" aria-checked={active} disabled={disabled} onClick={onChange}
       className={cn(
-        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none disabled:opacity-40 disabled:cursor-not-allowed",
-        active ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" : "bg-white/[0.1]"
-      )}
-    >
-      <span
-        className={cn(
-          "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200",
-          active ? "translate-x-4" : "translate-x-0"
-        )}
-      />
+        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 disabled:opacity-40 disabled:cursor-not-allowed",
+        active ? "bg-emerald-500" : "bg-slate-200 hover:bg-slate-300"
+      )}>
+      <span className={cn(
+        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200",
+        active ? "translate-x-4" : "translate-x-0"
+      )} />
     </button>
   );
 }
 
-function PageButton({
-  onClick,
-  disabled,
-  children,
-}: {
-  onClick: () => void;
-  disabled: boolean;
-  children: React.ReactNode;
-}) {
+function PageButton({ onClick, disabled, children }: { onClick: () => void; disabled: boolean; children: React.ReactNode }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-slate-500 hover:bg-white/[0.07] hover:text-slate-300 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
-    >
+    <button onClick={onClick} disabled={disabled}
+      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-100 shadow-sm active:scale-95">
       {children}
     </button>
   );
 }
 
 export function EventsManager({ registeredEvents }: Props) {
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [events, setEvents] = useState<EventsByDateItem[]>([]);
-  const [loading, startLoad] = useTransition();
+  const [date, setDate]         = useState(new Date().toISOString().split("T")[0]);
+  const [search, setSearch]     = useState("");
+  const [page, setPage]         = useState(0);
+  const [events, setEvents]     = useState<EventsByDateItem[]>([]);
+  const [loading, startLoad]    = useTransition();
   const [toggling, setToggling] = useState<Set<number>>(new Set());
-  const [error, setError] = useState("");
+  const [error, setError]       = useState("");
 
   const [activeIds, setActiveIds] = useState<Set<string>>(
-    () => new Set(registeredEvents.map((e) => e.externalEventId))
+    () => new Set(registeredEvents.map(e => e.externalEventId))
   );
-
   const registeredMap = useMemo(
-    () =>
-      new Map<string, number>(
-        registeredEvents.map((e) => [e.externalEventId, e.id])
-      ),
+    () => new Map<string, number>(registeredEvents.map(e => [e.externalEventId, e.id])),
     [registeredEvents]
   );
 
-  const filtered = useMemo(
-    () =>
-      events.filter((e) =>
-        e.matchName.toLowerCase().includes(search.toLowerCase())
-      ),
-    [events, search]
-  );
-
+  const filtered   = useMemo(() => events.filter(e => e.matchName.toLowerCase().includes(search.toLowerCase())), [events, search]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageEvents = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const from = filtered.length === 0 ? 0 : page * PAGE_SIZE + 1;
-  const to = Math.min((page + 1) * PAGE_SIZE, filtered.length);
+  const to   = Math.min((page + 1) * PAGE_SIZE, filtered.length);
 
   useEffect(() => setPage(0), [search]);
 
   const fetchEvents = useCallback((d: string) => {
-    setError("");
-    setPage(0);
+    setError(""); setPage(0);
     startLoad(async () => {
-      try {
-        const data = await getEventsByDate(d);
-        setEvents(data);
-      } catch {
-        setError("Failed to load events from Offer API");
-      }
+      try { setEvents(await getEventsByDate(d)); }
+      catch { setError("Failed to load events from Offer API"); }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    fetchEvents(date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { fetchEvents(date); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleToggle(event: EventsByDateItem) {
     const externalId = String(event.eventId);
     const isActive = activeIds.has(externalId);
     const dbId = registeredMap.get(externalId);
-
-    setToggling((prev) => new Set([...prev, event.eventId]));
-
-    setActiveIds((prev) => {
-      const next = new Set(prev);
-      if (isActive) next.delete(externalId);
-      else next.add(externalId);
-      return next;
-    });
-
+    setToggling(prev => new Set([...prev, event.eventId]));
+    setActiveIds(prev => { const n = new Set(prev); isActive ? n.delete(externalId) : n.add(externalId); return n; });
     try {
-      if (isActive && dbId !== undefined) {
-        await deleteEvent(dbId);
-        registeredMap.delete(externalId);
-      } else {
-        await registerEvent(externalId, event.matchName);
-      }
+      if (isActive && dbId !== undefined) { await deleteEvent(dbId); registeredMap.delete(externalId); }
+      else await registerEvent(externalId, event.matchName);
     } catch {
-      setActiveIds((prev) => {
-        const next = new Set(prev);
-        if (isActive) next.add(externalId);
-        else next.delete(externalId);
-        return next;
-      });
+      setActiveIds(prev => { const n = new Set(prev); isActive ? n.add(externalId) : n.delete(externalId); return n; });
     } finally {
-      setToggling((prev) => {
-        const next = new Set(prev);
-        next.delete(event.eventId);
-        return next;
-      });
+      setToggling(prev => { const n = new Set(prev); n.delete(event.eventId); return n; });
     }
   }
 
+  const activeCount = activeIds.size;
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-100 tracking-tight">Events</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Soccer matches · sport type 5</p>
+    <div className="animate-enter">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Events</h1>
+          <p className="text-sm text-slate-500 mt-1">Soccer matches · sport type 5</p>
+        </div>
+        {activeCount > 0 && (
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <span className="text-xs font-bold text-emerald-700 tabular-nums">{activeCount} active</span>
+          </div>
+        )}
       </div>
 
       {error && (
-        <div className="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-          {error}
+        <div className="mb-4 flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <span className="shrink-0 mt-0.5">⚠</span>
+          <span>{error}</span>
         </div>
       )}
 
-      <div className="rounded-xl border border-white/[0.07] bg-[#0e1520]/60 overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.07] bg-black/10">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50/80">
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search event"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 text-sm border border-white/[0.1] rounded-lg bg-white/[0.04] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
-            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <input type="text" placeholder="Search event…" value={search} onChange={e => setSearch(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 transition-all" />
           </div>
           <div className="relative">
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="h-9 pl-3 pr-9 text-sm border border-white/[0.1] rounded-lg bg-white/[0.04] text-slate-300 focus:outline-none focus:border-blue-500/50 cursor-pointer"
-            />
-            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600 pointer-events-none" />
+            <input type="date" value={date} onChange={e => setDate(e.target.value)}
+              className="h-9 pl-3 pr-9 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 shadow-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all" />
+            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
           </div>
-          <button
-            onClick={() => fetchEvents(date)}
-            disabled={loading}
-            className="h-9 px-4 text-sm font-medium rounded-lg border border-white/[0.1] bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-          >
-            {loading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Search className="h-3.5 w-3.5" />
-            )}
+          <button onClick={() => fetchEvents(date)} disabled={loading}
+            className="h-9 px-4 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98]">
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
             Search
           </button>
         </div>
 
-        {/* Table body */}
+        {/* Body */}
         {loading ? (
-          <div className="flex items-center justify-center gap-2 py-20 text-slate-600 text-sm">
+          <div className="flex items-center justify-center gap-2.5 py-20 text-slate-400 text-sm font-medium">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading matches…
           </div>
         ) : events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-600">
-            <Calendar className="h-10 w-10 text-white/[0.05]" />
-            <p className="text-sm">No soccer matches found for this date</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-400">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-slate-300" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-slate-600">No matches found</p>
+              <p className="text-xs text-slate-400 mt-0.5">Try a different date or search term</p>
+            </div>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.07]">
-                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Event name
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Home
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Away
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Start
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Tournament
-                </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500 text-right">
-                  Select
-                </th>
+              <tr className="border-b border-slate-200 bg-slate-50/80">
+                {["Event", "Home", "Away", "Start", "Tournament", ""].map((h, i) => (
+                  <th key={i} className={cn(
+                    "px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400",
+                    i === 5 ? "text-right" : "text-left"
+                  )}>{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
-              {pageEvents.map((e) => {
+            <tbody className="divide-y divide-slate-100">
+              {pageEvents.map((e, i) => {
                 const { home, away } = parseTeams(e);
-                const isActive = activeIds.has(String(e.eventId));
+                const isActive   = activeIds.has(String(e.eventId));
                 const isToggling = toggling.has(e.eventId);
                 return (
-                  <tr
-                    key={e.eventId}
-                    className="hover:bg-white/[0.02] transition-colors"
-                  >
-                    <td className="px-4 py-3 text-slate-300">{e.matchName}</td>
-                    <td className="px-4 py-3 text-slate-400">{home}</td>
-                    <td className="px-4 py-3 text-slate-400">{away}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs font-mono whitespace-nowrap">
+                  <tr key={e.eventId}
+                    className="hover:bg-slate-50/70 transition-colors duration-100 animate-enter"
+                    style={{ animationDelay: `${i * 20}ms` }}>
+                    <td className="px-4 py-3.5 font-semibold text-slate-800 max-w-[180px] truncate">{e.matchName}</td>
+                    <td className="px-4 py-3.5 text-slate-600">{home}</td>
+                    <td className="px-4 py-3.5 text-slate-600">{away}</td>
+                    <td className="px-4 py-3.5 text-slate-500 text-xs font-mono tabular-nums whitespace-nowrap">
                       {new Date(e.matchDate).toLocaleString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
+                        day:"numeric", month:"short", hour:"2-digit", minute:"2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">
-                      {e.tournamentName ?? (
-                        <span className="text-slate-700">ID: {e.tournamentId}</span>
-                      )}
+                    <td className="px-4 py-3.5 text-slate-500 text-xs max-w-[140px] truncate">
+                      {e.tournamentName ?? <span className="text-slate-400 font-mono">#{e.tournamentId}</span>}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
                       <div className="flex justify-end">
-                        <Toggle
-                          active={isActive}
-                          disabled={isToggling}
-                          onChange={() => handleToggle(e)}
-                        />
+                        <Toggle active={isActive} disabled={isToggling} onChange={() => handleToggle(e)} />
                       </div>
                     </td>
                   </tr>
@@ -308,31 +204,14 @@ export function EventsManager({ registeredEvents }: Props) {
 
         {/* Pagination */}
         {!loading && filtered.length > 0 && (
-          <div className="flex items-center justify-center gap-1.5 px-4 py-3 border-t border-white/[0.07]">
-            <PageButton onClick={() => setPage(0)} disabled={page === 0}>
-              <ChevronsLeft className="h-3 w-3" />
-            </PageButton>
-            <PageButton
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page === 0}
-            >
-              <ChevronLeft className="h-3 w-3" />
-            </PageButton>
-            <span className="px-3 text-sm text-slate-500 select-none font-mono">
-              {from}–{to} of {filtered.length}
+          <div className="flex items-center justify-center gap-2 px-4 py-3 border-t border-slate-200 bg-slate-50/80">
+            <PageButton onClick={() => setPage(0)}           disabled={page === 0}><ChevronsLeft  className="h-3 w-3" /></PageButton>
+            <PageButton onClick={() => setPage(p => p - 1)} disabled={page === 0}><ChevronLeft   className="h-3 w-3" /></PageButton>
+            <span className="px-3 text-xs text-slate-500 select-none font-mono font-semibold tabular-nums">
+              {from}–{to} <span className="text-slate-400">of</span> {filtered.length}
             </span>
-            <PageButton
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= totalPages - 1}
-            >
-              <ChevronRight className="h-3 w-3" />
-            </PageButton>
-            <PageButton
-              onClick={() => setPage(totalPages - 1)}
-              disabled={page >= totalPages - 1}
-            >
-              <ChevronsRight className="h-3 w-3" />
-            </PageButton>
+            <PageButton onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}><ChevronRight  className="h-3 w-3" /></PageButton>
+            <PageButton onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1}><ChevronsRight className="h-3 w-3" /></PageButton>
           </div>
         )}
       </div>
