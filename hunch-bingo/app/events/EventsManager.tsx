@@ -130,11 +130,11 @@ export function EventsManager({ registeredEvents }: Props) {
             <input type="text" placeholder="Search event…" value={search} onChange={e => setSearch(e.target.value)}
               className="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 transition-all" />
           </div>
-          <div className="relative">
+          <label className="relative flex h-9 items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 shadow-sm transition-all duration-150 cursor-pointer hover:border-slate-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/15">
+            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0 pointer-events-none" />
             <input type="date" value={date} onChange={e => setDate(e.target.value)}
-              className="h-9 pl-3 pr-9 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 shadow-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 cursor-pointer transition-all" />
-            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-          </div>
+              className="text-sm text-slate-700 font-medium bg-transparent border-none outline-none cursor-pointer w-28" />
+          </label>
           <button onClick={() => fetchEvents(date)} disabled={loading}
             className="h-9 px-4 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98]">
             {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}

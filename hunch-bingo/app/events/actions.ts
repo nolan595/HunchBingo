@@ -15,9 +15,11 @@ export async function registerEvent(externalEventId: string, name: string) {
     create: { externalEventId, name },
   });
   revalidatePath("/events");
+  revalidatePath("/games");
 }
 
 export async function deleteEvent(id: number) {
   await prisma.externalEvent.delete({ where: { id } });
   revalidatePath("/events");
+  revalidatePath("/games");
 }

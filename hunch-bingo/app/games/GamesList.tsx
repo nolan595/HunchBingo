@@ -82,7 +82,7 @@ function CreateGameDialog({ events, onClose }: { events: ExternalEvent[]; onClos
           </div>
         )}
       </div>
-      <div className="flex justify-end gap-2 px-6 py-4 bg-slate-50 border-t border-slate-100">
+      <div className="flex justify-end gap-2 px-6 py-4 bg-slate-50 border-t border-slate-100 rounded-b-2xl overflow-hidden">
         <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
         <Button type="submit" disabled={pending || events.length === 0}>
           {pending ? "Creating…" : "Create Game"}
