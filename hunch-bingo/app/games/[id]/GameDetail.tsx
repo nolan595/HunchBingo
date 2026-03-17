@@ -1,14 +1,13 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { advanceGameStatus, triggerResulting } from "./actions";
 import type {
   Game, ExternalEvent, GameSheetResult, GameSquareResult, BingoSheet,
 } from "@/app/generated/prisma";
-import { CheckCircle2, XCircle, AlertCircle, Clock, LayoutGrid, ChevronLeft } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, Clock, LayoutGrid } from "lucide-react";
 
 type SquareWithResult  = GameSquareResult;
 type SheetWithSquares  = GameSheetResult & { sheet: BingoSheet; squares: SquareWithResult[] };
@@ -136,15 +135,6 @@ export function GameDetail({ game }: { game: GameWithAll }) {
 
   return (
     <div className="animate-enter space-y-6">
-      {/* Back nav */}
-      <Link
-        href="/games"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-slate-800 transition-colors group"
-      >
-        <ChevronLeft className="h-4 w-4 transition-transform duration-150 group-hover:-translate-x-0.5" />
-        Games
-      </Link>
-
       {/* Header card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Top accent */}

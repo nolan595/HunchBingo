@@ -80,7 +80,7 @@ model Game {
 model GameSheetResult {
   id          Int        @id @default(autoincrement())
   gameId      Int
-  game        Game       @relation(fields: [gameId], references: [id])
+  game        Game       @relation(fields: [gameId], references: [id], onDelete: Cascade)
   sheetId     Int
   sheet       BingoSheet @relation(fields: [sheetId], references: [id])
   connect3    Boolean?
@@ -103,7 +103,7 @@ enum SquareStatus {
 model GameSquareResult {
   id            Int             @id @default(autoincrement())
   gameSheetId   Int
-  gameSheet     GameSheetResult @relation(fields: [gameSheetId], references: [id])
+  gameSheet     GameSheetResult @relation(fields: [gameSheetId], references: [id], onDelete: Cascade)
   position      Int             // 1-9
   marketId      Int
   marketName    String?

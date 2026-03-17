@@ -12,6 +12,7 @@ export default async function BingoSheetsPage() {
         orderBy: { position: "asc" },
         include: { difficulty: true },
       },
+      _count: { select: { gameSheetResults: true } },
     },
   });
 

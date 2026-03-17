@@ -1,33 +1,42 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { deleteBingoSheet } from "./actions";
-import { Trash2, LayoutGrid } from "lucide-react";
+import { Trash2, Pencil, LayoutGrid, Trophy } from "lucide-react";
 import type { BingoSheet, BingoSheetSquare, OddsDifficulty } from "@/app/generated/prisma";
 
 type SquareWithDiff  = BingoSheetSquare & { difficulty: OddsDifficulty };
-type SheetWithSquares = BingoSheet & { squares: SquareWithDiff[] };
-
-const DIFFICULTY_COLORS: Record<string, string> = {
-  Easy:   "bg-emerald-50 text-emerald-700 border-emerald-200",
-  Medium: "bg-amber-50   text-amber-700   border-amber-200",
-  Hard:   "bg-red-50     text-red-700     border-red-200",
+type SheetWithSquares = BingoSheet & {
+  squares: SquareWithDiff[];
+  _count: { gameSheetResults: number };
 };
 
-function getDifficultyColor(name: string) {
-  return DIFFICULTY_COLORS[name] ?? "bg-slate-100 text-slate-600 border-slate-200";
+// Named difficulty tiers get semantic colours; unknowns fall back to neutral
+function difficultyStyle(name: string): string {
+  if (name === "Near Certain") return "bg-sky-50 text-sky-700 border-sky-200";
+  if (name === "Easy")         return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (name === "Medium")       return "bg-amber-50 text-amber-700 border-amber-200";
+  if (name === "Hard")         return "bg-red-50 text-red-700 border-red-200";
+  if (name === "Extreme")      return "bg-purple-50 text-purple-700 border-purple-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
 }
 
-function MiniGrid({ squares }: { squares: SquareWithDiff[] }) {
+function SheetGrid({ squares }: { squares: SquareWithDiff[] }) {
   const sorted = [...squares].sort((a, b) => a.position - b.position);
+  // Render as 3 rows — each row is a potential Connect-3 line, so the layout is semantically meaningful
   return (
-    <div className="grid grid-cols-3 gap-1 w-fit shrink-0">
+    <div className="grid grid-cols-3 gap-1.5">
       {sorted.map(sq => (
         <div key={sq.position}
-          className="w-[52px] h-11 border border-slate-200 rounded-lg text-center p-1 bg-slate-50 flex flex-col items-center justify-center gap-0.5 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors duration-100">
-          <p className="text-[11px] font-mono font-bold text-slate-700 leading-none tabular-nums">{sq.marketId}</p>
-          <p className="text-[8px] text-slate-400 leading-tight font-semibold uppercase tracking-wide">{sq.difficulty.name}</p>
+          className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 flex flex-col gap-1 min-w-0">
+          <p className="text-[13px] font-mono font-bold text-slate-800 tabular-nums leading-none">
+            {sq.marketId}
+          </p>
+          <span className={`self-start text-[9px] font-bold uppercase tracking-wider border rounded-full px-1.5 py-0.5 leading-none ${difficultyStyle(sq.difficulty.name)}`}>
+            {sq.difficulty.name}
+          </span>
         </div>
       ))}
     </div>
@@ -60,35 +69,48 @@ export function BingoSheetList({ sheets }: { sheets: SheetWithSquares[] }) {
     <div className="space-y-3">
       {sheets.map((sheet, i) => (
         <div key={sheet.id}
-          className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-5 group animate-enter"
+          className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 group animate-enter"
           style={{ animationDelay: `${i * 40}ms` }}>
-          <MiniGrid squares={sheet.squares} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="font-bold text-slate-900 truncate">{sheet.name}</h3>
-                <p className="text-[11px] text-slate-400 mt-0.5 font-mono font-semibold">
+
+          {/* Header row */}
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <h3 className="font-bold text-slate-900 truncate">{sheet.name}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-[11px] text-slate-400 font-semibold">
                   Created {new Date(sheet.createdAt).toLocaleDateString("en-GB", {
-                    day:"numeric", month:"short", year:"numeric",
+                    day: "numeric", month: "short", year: "numeric",
                   })}
                 </p>
+                {sheet._count.gameSheetResults > 0 && (
+                  <>
+                    <span className="text-slate-200">·</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600">
+                      <Trophy className="h-3 w-3" />
+                      {sheet._count.gameSheetResults} {sheet._count.gameSheetResults === 1 ? "game" : "games"}
+                    </span>
+                  </>
+                )}
               </div>
-              <Button size="icon" variant="ghost" onClick={() => handleDelete(sheet.id)}
-                className="text-slate-300 hover:text-red-600 hover:bg-red-50 shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-150">
+            </div>
+
+            {/* Actions — reveal on hover */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0">
+              <Button size="icon" variant="ghost" asChild
+                className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 h-8 w-8">
+                <Link href={`/bingo-sheets/${sheet.id}/edit`}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+              <Button size="icon" variant="ghost"
+                onClick={() => handleDelete(sheet.id)}
+                className="text-slate-400 hover:text-red-600 hover:bg-red-50 h-8 w-8">
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {sheet.squares.sort((a, b) => a.position - b.position).map(sq => (
-                <span key={sq.position}
-                  className={`inline-flex items-center gap-1.5 text-[11px] font-bold border rounded-full px-2.5 py-0.5 ${getDifficultyColor(sq.difficulty.name)}`}>
-                  <span className="font-mono tabular-nums">{sq.marketId}</span>
-                  <span className="opacity-40">·</span>
-                  <span className="uppercase tracking-wide text-[9px]">{sq.difficulty.name}</span>
-                </span>
-              ))}
-            </div>
           </div>
+
+          <SheetGrid squares={sheet.squares} />
         </div>
       ))}
     </div>

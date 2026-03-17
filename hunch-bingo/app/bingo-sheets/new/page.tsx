@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { SheetBuilder } from "../SheetBuilder";
+import { createBingoSheet } from "../actions";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
@@ -28,7 +29,11 @@ export default async function NewBingoSheetPage() {
           </p>
         </div>
       ) : (
-        <SheetBuilder difficulties={difficulties} />
+        <SheetBuilder
+          difficulties={difficulties}
+          onSubmit={createBingoSheet}
+          submitLabel="Create Sheet"
+        />
       )}
     </div>
   );

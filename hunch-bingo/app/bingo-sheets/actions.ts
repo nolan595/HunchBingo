@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
-type SquareInput = {
+export type SquareInput = {
   position: number;
   marketId: number;
   difficultyId: number;
@@ -35,5 +35,37 @@ export async function createBingoSheet(name: string, squares: SquareInput[]) {
 
 export async function deleteBingoSheet(id: number) {
   await prisma.bingoSheet.delete({ where: { id } });
+  revalidatePath("/bingo-sheets");
+}
+
+export async function updateBingoSheet(id: number, name: string, squares: SquareInput[]) {
+  if (!name.trim()) throw new Error("Sheet name is required");
+  if (squares.length !== 9) throw new Error("Exactly 9 squares required");
+
+  const marketIds = squares.map(s => s.marketId);
+  if (new Set(marketIds).size !== marketIds.length)
+    throw new Error("Market IDs must be unique across all squares");
+
+  const sheet = await prisma.bingoSheet.findUnique({ where: { id } });
+  if (!sheet) throw new Error("Sheet not found");
+
+  // Delete-and-recreate squares atomically — cleaner than upsert for a fixed 9-slot grid
+  await prisma.$transaction(async (tx) => {
+    await tx.bingoSheetSquare.deleteMany({ where: { sheetId: id } });
+    await tx.bingoSheet.update({
+      where: { id },
+      data: {
+        name,
+        squares: {
+          create: squares.map(s => ({
+            position: s.position,
+            marketId: s.marketId,
+            difficultyId: s.difficultyId,
+          })),
+        },
+      },
+    });
+  });
+
   revalidatePath("/bingo-sheets");
 }

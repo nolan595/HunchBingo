@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Trophy, Calendar, Sliders } from "lucide-react";
+import { LayoutGrid, Trophy, Calendar, Sliders, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
+  { href: "/",             label: "Dashboard",    icon: Home       },
   { href: "/games",        label: "Games",        icon: Trophy     },
   { href: "/bingo-sheets", label: "Bingo Sheets",  icon: LayoutGrid },
   { href: "/events",       label: "Events",        icon: Calendar   },
@@ -34,7 +35,9 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
       {/* Nav */}
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
         {nav.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+          const active = href === "/"
+            ? pathname === "/"
+            : pathname === href || pathname.startsWith(href + "/");
           const showLiveBadge = href === "/games" && openGamesCount > 0;
           return (
             <Link
