@@ -1,6 +1,6 @@
-import type { Config, ScheduledHandler } from "@netlify/functions";
+import type { Config } from "@netlify/functions";
 
-export const handler: ScheduledHandler = async () => {
+export const handler = async () => {
   const siteUrl = process.env.URL ?? process.env.NEXT_PUBLIC_SITE_URL;
   const cronSecret = process.env.CRON_SECRET;
 
