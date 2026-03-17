@@ -100,67 +100,101 @@ export function DifficultyManager({ difficulties }: Props) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50/80">
-              <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Name</th>
-              <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Odds Range</th>
-              <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Created</th>
-              <th className="px-5 py-3" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {difficulties.length === 0 && (
-              <tr>
-                <td colSpan={4}>
-                  <div className="flex flex-col items-center gap-3 py-16 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      <Sliders className="h-5 w-5 text-slate-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-700">No difficulty tiers yet</p>
-                      <p className="text-xs text-slate-400 mt-0.5">Add tiers to define odds ranges for squares</p>
-                    </div>
-                  </div>
-                </td>
+      {/* Empty state */}
+      {difficulties.length === 0 && (
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col items-center gap-3 py-16 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+            <Sliders className="h-5 w-5 text-slate-400" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-700">No difficulty tiers yet</p>
+            <p className="text-xs text-slate-400 mt-0.5">Add tiers to define odds ranges for squares</p>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop table */}
+      {difficulties.length > 0 && (
+        <div className="hidden sm:block rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/80">
+                <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Name</th>
+                <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Odds Range</th>
+                <th className="text-left px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Created</th>
+                <th className="px-5 py-3" />
               </tr>
-            )}
-            {difficulties.map((d, i) => (
-              <tr key={d.id}
-                className="hover:bg-slate-50/70 transition-colors duration-100 group animate-enter"
-                style={{ animationDelay: `${i * 30}ms` }}>
-                <td className="px-5 py-3.5 font-bold text-slate-900">{d.name}</td>
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-semibold text-slate-700 tabular-nums">{d.oddsMin.toFixed(2)}</span>
-                    <span className="text-slate-300 text-xs">→</span>
-                    <span className="font-mono text-sm font-semibold text-slate-700 tabular-nums">{d.oddsMax.toFixed(2)}</span>
-                    <span className="ml-1 text-[10px] font-bold text-slate-400 bg-slate-100 rounded-full px-2 py-0.5 tabular-nums">
-                      ×{((d.oddsMin + d.oddsMax) / 2).toFixed(2)} avg
-                    </span>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5 text-slate-400 text-xs font-mono font-semibold tabular-nums">
-                  {new Date(d.createdAt).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })}
-                </td>
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
-                    <Button size="icon" variant="ghost" onClick={() => setEditTarget(d)}
-                      className="text-slate-400 hover:text-slate-700 hover:bg-slate-100">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => handleDelete(d.id)}
-                      className="text-slate-400 hover:text-red-600 hover:bg-red-50">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {difficulties.map((d, i) => (
+                <tr key={d.id}
+                  className="hover:bg-slate-50/70 transition-colors duration-100 group animate-enter"
+                  style={{ animationDelay: `${i * 30}ms` }}>
+                  <td className="px-5 py-3.5 font-bold text-slate-900">{d.name}</td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-semibold text-slate-700 tabular-nums">{d.oddsMin.toFixed(2)}</span>
+                      <span className="text-slate-300 text-xs">→</span>
+                      <span className="font-mono text-sm font-semibold text-slate-700 tabular-nums">{d.oddsMax.toFixed(2)}</span>
+                      <span className="ml-1 text-[10px] font-bold text-slate-400 bg-slate-100 rounded-full px-2 py-0.5 tabular-nums">
+                        ×{((d.oddsMin + d.oddsMax) / 2).toFixed(2)} avg
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 text-slate-400 text-xs font-mono font-semibold tabular-nums">
+                    {new Date(d.createdAt).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+                      <Button size="icon" variant="ghost" onClick={() => setEditTarget(d)}
+                        className="text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(d.id)}
+                        className="text-slate-400 hover:text-red-600 hover:bg-red-50">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Mobile card list */}
+      {difficulties.length > 0 && (
+        <div className="sm:hidden space-y-2">
+          {difficulties.map((d, i) => (
+            <div key={d.id}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 animate-enter"
+              style={{ animationDelay: `${i * 30}ms` }}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-bold text-slate-900">{d.name}</p>
+                <div className="flex items-center gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => setEditTarget(d)}
+                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-8 w-8">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => handleDelete(d.id)}
+                    className="text-slate-400 hover:text-red-600 hover:bg-red-50 h-8 w-8">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="font-mono text-sm font-semibold text-slate-700 tabular-nums">{d.oddsMin.toFixed(2)}</span>
+                <span className="text-slate-300 text-xs">→</span>
+                <span className="font-mono text-sm font-semibold text-slate-700 tabular-nums">{d.oddsMax.toFixed(2)}</span>
+                <span className="ml-1 text-[10px] font-bold text-slate-400 bg-slate-100 rounded-full px-2 py-0.5 tabular-nums">
+                  ×{((d.oddsMin + d.oddsMax) / 2).toFixed(2)} avg
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
         <DialogContent>

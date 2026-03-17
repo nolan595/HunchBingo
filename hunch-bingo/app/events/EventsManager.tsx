@@ -124,22 +124,24 @@ export function EventsManager({ registeredEvents }: Props) {
 
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50/80">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-slate-200 bg-slate-50/80">
+          <div className="relative flex-1 min-w-[160px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
             <input type="text" placeholder="Search event…" value={search} onChange={e => setSearch(e.target.value)}
               className="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 transition-all" />
           </div>
-          <label className="relative flex h-9 items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 shadow-sm transition-all duration-150 cursor-pointer hover:border-slate-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/15">
-            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0 pointer-events-none" />
-            <input type="date" value={date} onChange={e => setDate(e.target.value)}
-              className="text-sm text-slate-700 font-medium bg-transparent border-none outline-none cursor-pointer w-28" />
-          </label>
-          <button onClick={() => fetchEvents(date)} disabled={loading}
-            className="h-9 px-4 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98]">
-            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-            Search
-          </button>
+          <div className="flex items-center gap-2">
+            <label className="relative flex h-9 items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 shadow-sm transition-all duration-150 cursor-pointer hover:border-slate-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/15">
+              <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0 pointer-events-none" />
+              <input type="date" value={date} onChange={e => setDate(e.target.value)}
+                className="text-sm text-slate-700 font-medium bg-transparent border-none outline-none cursor-pointer w-28" />
+            </label>
+            <button onClick={() => fetchEvents(date)} disabled={loading}
+              className="h-9 px-4 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-50 transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] shrink-0">
+              {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">Search</span>
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -159,47 +161,85 @@ export function EventsManager({ registeredEvents }: Props) {
             </div>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80">
-                {["Event", "Home", "Away", "Start", "Tournament", ""].map((h, i) => (
-                  <th key={i} className={cn(
-                    "px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400",
-                    i === 5 ? "text-right" : "text-left"
-                  )}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+          <>
+            {/* Desktop table */}
+            <table className="hidden sm:table w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/80">
+                  {["Event", "Home", "Away", "Start", "Tournament", ""].map((h, i) => (
+                    <th key={i} className={cn(
+                      "px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400",
+                      i === 5 ? "text-right" : "text-left"
+                    )}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pageEvents.map((e, i) => {
+                  const { home, away } = parseTeams(e);
+                  const isActive   = activeIds.has(String(e.eventId));
+                  const isToggling = toggling.has(e.eventId);
+                  return (
+                    <tr key={e.eventId}
+                      className="hover:bg-slate-50/70 transition-colors duration-100 animate-enter"
+                      style={{ animationDelay: `${i * 20}ms` }}>
+                      <td className="px-4 py-3.5 font-semibold text-slate-800 max-w-[180px] truncate">{e.matchName}</td>
+                      <td className="px-4 py-3.5 text-slate-600">{home}</td>
+                      <td className="px-4 py-3.5 text-slate-600">{away}</td>
+                      <td className="px-4 py-3.5 text-slate-500 text-xs font-mono tabular-nums whitespace-nowrap">
+                        {new Date(e.matchDate).toLocaleString("en-GB", {
+                          day:"numeric", month:"short", hour:"2-digit", minute:"2-digit",
+                        })}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-500 text-xs max-w-[140px] truncate">
+                        {e.tournamentName ?? <span className="text-slate-400 font-mono">#{e.tournamentId}</span>}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex justify-end">
+                          <Toggle active={isActive} disabled={isToggling} onChange={() => handleToggle(e)} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Mobile card list */}
+            <div className="sm:hidden divide-y divide-slate-100">
               {pageEvents.map((e, i) => {
                 const { home, away } = parseTeams(e);
                 const isActive   = activeIds.has(String(e.eventId));
                 const isToggling = toggling.has(e.eventId);
                 return (
-                  <tr key={e.eventId}
-                    className="hover:bg-slate-50/70 transition-colors duration-100 animate-enter"
+                  <div key={e.eventId}
+                    className="flex items-center gap-3 px-4 py-3.5 animate-enter"
                     style={{ animationDelay: `${i * 20}ms` }}>
-                    <td className="px-4 py-3.5 font-semibold text-slate-800 max-w-[180px] truncate">{e.matchName}</td>
-                    <td className="px-4 py-3.5 text-slate-600">{home}</td>
-                    <td className="px-4 py-3.5 text-slate-600">{away}</td>
-                    <td className="px-4 py-3.5 text-slate-500 text-xs font-mono tabular-nums whitespace-nowrap">
-                      {new Date(e.matchDate).toLocaleString("en-GB", {
-                        day:"numeric", month:"short", hour:"2-digit", minute:"2-digit",
-                      })}
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-500 text-xs max-w-[140px] truncate">
-                      {e.tournamentName ?? <span className="text-slate-400 font-mono">#{e.tournamentId}</span>}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex justify-end">
-                        <Toggle active={isActive} disabled={isToggling} onChange={() => handleToggle(e)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 text-sm truncate">{e.matchName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {home} <span className="text-slate-300 mx-1">vs</span> {away}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] font-mono text-slate-400 tabular-nums">
+                          {new Date(e.matchDate).toLocaleString("en-GB", {
+                            day:"numeric", month:"short", hour:"2-digit", minute:"2-digit",
+                          })}
+                        </span>
+                        {e.tournamentName && (
+                          <>
+                            <span className="text-slate-200">·</span>
+                            <span className="text-[11px] text-slate-400 truncate">{e.tournamentName}</span>
+                          </>
+                        )}
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <Toggle active={isActive} disabled={isToggling} onChange={() => handleToggle(e)} />
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
 
         {/* Pagination */}

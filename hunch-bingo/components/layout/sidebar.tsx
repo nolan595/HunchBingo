@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Trophy, Calendar, Sliders, Home } from "lucide-react";
+import { LayoutGrid, Trophy, Calendar, Sliders, Home, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 const nav = [
   { href: "/",             label: "Dashboard",    icon: Home       },
@@ -15,9 +16,19 @@ const nav = [
 
 export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside className="fixed left-0 top-0 h-full w-56 bg-white flex flex-col border-r border-slate-200/80 shadow-sm z-20">
+  // Close drawer on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  const navContent = (
+    <>
       {/* 3-px gradient accent line */}
       <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
 
@@ -30,6 +41,14 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
           <p className="font-bold text-[13px] text-slate-900 leading-none tracking-tight">Hunch Bingo</p>
           <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-semibold">Admin</p>
         </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="ml-auto md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          aria-label="Close menu"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -90,6 +109,56 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
           <span className="text-[11px] text-slate-400 font-semibold tracking-wide">Live · v0.1</span>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 shadow-sm z-30 flex items-center gap-3 px-4 md:hidden">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm shadow-indigo-500/30">
+            <LayoutGrid className="h-3 w-3 text-white" />
+          </div>
+          <p className="font-bold text-[13px] text-slate-900 tracking-tight">Hunch Bingo</p>
+        </div>
+        {openGamesCount > 0 && (
+          <span className="ml-auto flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            <span className="text-[11px] font-bold text-emerald-700 tabular-nums">{openGamesCount} live</span>
+          </span>
+        )}
+      </header>
+
+      {/* Backdrop overlay — mobile only */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed left-0 top-0 h-full w-56 bg-white flex flex-col border-r border-slate-200/80 shadow-sm z-50 transition-transform duration-300 ease-in-out",
+        // Desktop: always visible
+        "md:translate-x-0 md:z-20",
+        // Mobile: slide in/out
+        mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+        {navContent}
+      </aside>
+    </>
   );
 }

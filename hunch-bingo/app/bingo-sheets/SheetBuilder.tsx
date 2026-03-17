@@ -81,7 +81,7 @@ export function SheetBuilder({
   const filledCount = squares.filter(s => s.marketId.trim() && s.difficultyId).length;
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-2xl space-y-4 sm:space-y-6">
       {/* Sheet name */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
         <div className="space-y-2">
@@ -102,33 +102,30 @@ export function SheetBuilder({
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Grid (3×3)</p>
           <span className="text-[11px] font-bold tabular-nums text-slate-400">{filledCount}/9 filled</span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {squares.map((sq, i) => {
             const filled = sq.marketId.trim() && sq.difficultyId;
             return (
               <div
                 key={i}
-                className={`rounded-xl border-2 p-3 space-y-2.5 transition-all duration-150 ${
+                className={`rounded-xl border-2 p-2 sm:p-3 space-y-2 transition-all duration-150 ${
                   filled
                     ? "border-indigo-200 bg-indigo-50/40"
                     : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sq {i + 1}</p>
-                  <p className="text-[9px] text-slate-300 font-medium">{POSITION_LABELS[i]}</p>
-                </div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sq {i + 1}</p>
                 <Input
                   type="number"
                   min={1}
                   value={sq.marketId}
                   onChange={e => updateSquare(i, "marketId", e.target.value)}
                   placeholder="Market ID"
-                  className="h-8 text-sm font-mono font-bold tabular-nums"
+                  className="h-7 sm:h-8 text-xs sm:text-sm font-mono font-bold tabular-nums px-2"
                 />
                 <Select value={sq.difficultyId} onValueChange={v => updateSquare(i, "difficultyId", v)}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Difficulty…" />
+                  <SelectTrigger className="h-7 sm:h-8 text-[11px] sm:text-xs px-2">
+                    <SelectValue placeholder="Diff…" />
                   </SelectTrigger>
                   <SelectContent>
                     {difficulties.map(d => (

@@ -152,7 +152,7 @@ export function GameDetail({ game }: { game: GameWithAll }) {
           </div>
 
           {/* Stats strip */}
-          <div className="mt-4 flex items-center gap-5 text-sm">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Opens</p>
               <p className="font-mono text-slate-700 text-xs tabular-nums font-semibold">
@@ -161,7 +161,7 @@ export function GameDetail({ game }: { game: GameWithAll }) {
                 })}
               </p>
             </div>
-            <div className="w-px h-8 bg-slate-100" />
+            <div className="hidden sm:block w-px h-8 bg-slate-100" />
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Closes</p>
               <p className="font-mono text-slate-700 text-xs tabular-nums font-semibold">
@@ -172,7 +172,7 @@ export function GameDetail({ game }: { game: GameWithAll }) {
             </div>
             {game.status === "COMPLETED" && totalSheets > 0 && (
               <>
-                <div className="w-px h-8 bg-slate-100" />
+                <div className="hidden sm:block w-px h-8 bg-slate-100" />
                 <div>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Connect 3</p>
                   <p className="font-mono text-sm font-bold">
@@ -184,7 +184,7 @@ export function GameDetail({ game }: { game: GameWithAll }) {
             )}
             {game.status !== "COMPLETED" && totalSheets > 0 && (
               <>
-                <div className="w-px h-8 bg-slate-100" />
+                <div className="hidden sm:block w-px h-8 bg-slate-100" />
                 <div>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Sheets</p>
                   <p className="font-mono text-sm font-bold text-slate-700 tabular-nums">{totalSheets}</p>
@@ -242,7 +242,7 @@ export function GameDetail({ game }: { game: GameWithAll }) {
           )}
 
           {(canAdvance || canResult) && (
-            <div className="mt-5 flex gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               {canAdvance && (
                 <Button onClick={handleAdvance} disabled={pending}>
                   {pending ? "Working…" : NEXT_ACTION_LABELS[game.status]}

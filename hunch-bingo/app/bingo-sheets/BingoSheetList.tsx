@@ -94,8 +94,8 @@ export function BingoSheetList({ sheets }: { sheets: SheetWithSquares[] }) {
               </div>
             </div>
 
-            {/* Actions — reveal on hover */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0">
+            {/* Actions — always visible on touch, reveal on hover on desktop */}
+            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 shrink-0">
               <Button size="icon" variant="ghost" asChild
                 className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 h-8 w-8">
                 <Link href={`/bingo-sheets/${sheet.id}/edit`}>
