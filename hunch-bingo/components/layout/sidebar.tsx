@@ -38,7 +38,7 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
           <LayoutGrid className="h-3.5 w-3.5 text-white" />
         </div>
         <div className="min-w-0">
-          <p className="font-bold text-[13px] text-slate-900 leading-none tracking-tight">Hunch Bingo</p>
+          <p className="font-bold text-[13px] text-slate-900 leading-none tracking-tight">Jack Connect 3</p>
           <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-semibold">Admin</p>
         </div>
         {/* Close button — mobile only */}
@@ -127,7 +127,7 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
           <div className="w-6 h-6 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm shadow-indigo-500/30">
             <LayoutGrid className="h-3 w-3 text-white" />
           </div>
-          <p className="font-bold text-[13px] text-slate-900 tracking-tight">Hunch Bingo</p>
+          <p className="font-bold text-[13px] text-slate-900 tracking-tight">Jack Connect 3</p>
         </div>
         {openGamesCount > 0 && (
           <span className="ml-auto flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
