@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SheetBuilder } from "../../SheetBuilder";
 import { updateBingoSheet } from "../../actions";
 import type { SquareInput } from "../../actions";
+import type { SheetSegment } from "@/app/generated/prisma";
 import Link from "next/link";
 import { ChevronLeft, AlertTriangle } from "lucide-react";
 
@@ -34,9 +35,9 @@ export default async function EditBingoSheetPage({
   if (!sheet) notFound();
 
   // Bind sheetId into a server action so the client component doesn't need to know it
-  async function handleUpdate(name: string, squares: SquareInput[]) {
+  async function handleUpdate(name: string, squares: SquareInput[], segment: SheetSegment | null) {
     "use server";
-    await updateBingoSheet(sheetId, name, squares);
+    await updateBingoSheet(sheetId, name, squares, segment);
   }
 
   return (
@@ -99,6 +100,7 @@ export default async function EditBingoSheetPage({
         <SheetBuilder
           difficulties={difficulties}
           defaultName={sheet.name}
+          defaultSegment={sheet.segment}
           defaultSquares={sheet.squares.map(s => ({
             marketId: s.marketId,
             difficultyId: s.difficultyId,

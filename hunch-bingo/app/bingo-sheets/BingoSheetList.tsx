@@ -5,7 +5,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { deleteBingoSheet } from "./actions";
 import { Trash2, Pencil, LayoutGrid, Trophy } from "lucide-react";
-import type { BingoSheet, BingoSheetSquare, OddsDifficulty } from "@/app/generated/prisma";
+import type { BingoSheet, BingoSheetSquare, OddsDifficulty, SheetSegment } from "@/app/generated/prisma";
+
+const SEGMENT_STYLES: Record<SheetSegment, { label: string; cls: string }> = {
+  EASY:   { label: "Easy",   cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  MEDIUM: { label: "Medium", cls: "text-amber-700 bg-amber-50 border-amber-200" },
+  HARD:   { label: "Hard",   cls: "text-red-700 bg-red-50 border-red-200" },
+};
 
 type SquareWithDiff  = BingoSheetSquare & { difficulty: OddsDifficulty };
 type SheetWithSquares = BingoSheet & {
@@ -75,7 +81,14 @@ export function BingoSheetList({ sheets }: { sheets: SheetWithSquares[] }) {
           {/* Header row */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="min-w-0">
-              <h3 className="font-bold text-slate-900 truncate">{sheet.name}</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-slate-900 truncate">{sheet.name}</h3>
+                {sheet.segment && (
+                  <span className={`text-[10px] font-bold uppercase tracking-widest border rounded-full px-2 py-0.5 leading-none shrink-0 ${SEGMENT_STYLES[sheet.segment].cls}`}>
+                    {SEGMENT_STYLES[sheet.segment].label}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-[11px] text-slate-400 font-semibold">
                   Created {new Date(sheet.createdAt).toLocaleDateString("en-GB", {
