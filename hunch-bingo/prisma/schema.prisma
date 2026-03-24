@@ -32,6 +32,7 @@ model OddsDifficulty {
 model BingoSheet {
   id        Int      @id @default(autoincrement())
   name      String
+  enabled   Boolean  @default(true)
   segmentId Int?
   segment   Segment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())

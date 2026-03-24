@@ -39,6 +39,11 @@ export async function deleteBingoSheet(id: number) {
   revalidatePath("/bingo-sheets");
 }
 
+export async function toggleBingoSheet(id: number, enabled: boolean) {
+  await prisma.bingoSheet.update({ where: { id }, data: { enabled } });
+  revalidatePath("/bingo-sheets");
+}
+
 export async function updateBingoSheet(id: number, name: string, squares: SquareInput[], segmentId: number | null) {
   if (!name.trim()) throw new Error("Sheet name is required");
   if (squares.length !== 9) throw new Error("Exactly 9 squares required");

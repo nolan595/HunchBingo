@@ -13,6 +13,7 @@ export async function lockPrices(gameId: number) {
   const odds = event.odds ?? [];
 
   const sheets = await prisma.bingoSheet.findMany({
+    where: { enabled: true },
     include: { squares: { include: { difficulty: true } } },
   });
 
