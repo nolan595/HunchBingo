@@ -9,10 +9,6 @@ export default async function BingoSheetsPage() {
     orderBy: { createdAt: "desc" },
     include: {
       segment: true,
-      squares: {
-        orderBy: { position: "asc" },
-        include: { difficulty: true },
-      },
       _count: { select: { gameSheetResults: true } },
     },
   });
