@@ -5,16 +5,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { deleteBingoSheet } from "./actions";
 import { Trash2, Pencil, LayoutGrid, Trophy } from "lucide-react";
-import type { BingoSheet, BingoSheetSquare, OddsDifficulty, SheetSegment } from "@/app/generated/prisma";
-
-const SEGMENT_STYLES: Record<SheetSegment, { label: string; cls: string }> = {
-  EASY:   { label: "Easy",   cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  MEDIUM: { label: "Medium", cls: "text-amber-700 bg-amber-50 border-amber-200" },
-  HARD:   { label: "Hard",   cls: "text-red-700 bg-red-50 border-red-200" },
-};
+import type { BingoSheet, BingoSheetSquare, OddsDifficulty, Segment } from "@/app/generated/prisma";
 
 type SquareWithDiff  = BingoSheetSquare & { difficulty: OddsDifficulty };
 type SheetWithSquares = BingoSheet & {
+  segment: Segment | null;
   squares: SquareWithDiff[];
   _count: { gameSheetResults: number };
 };
@@ -31,7 +26,6 @@ function difficultyStyle(name: string): string {
 
 function SheetGrid({ squares }: { squares: SquareWithDiff[] }) {
   const sorted = [...squares].sort((a, b) => a.position - b.position);
-  // Render as 3 rows — each row is a potential Connect-3 line, so the layout is semantically meaningful
   return (
     <div className="grid grid-cols-3 gap-1.5">
       {sorted.map(sq => (
@@ -78,14 +72,13 @@ export function BingoSheetList({ sheets }: { sheets: SheetWithSquares[] }) {
           className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 group animate-enter"
           style={{ animationDelay: `${i * 40}ms` }}>
 
-          {/* Header row */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-bold text-slate-900 truncate">{sheet.name}</h3>
                 {sheet.segment && (
-                  <span className={`text-[10px] font-bold uppercase tracking-widest border rounded-full px-2 py-0.5 leading-none shrink-0 ${SEGMENT_STYLES[sheet.segment].cls}`}>
-                    {SEGMENT_STYLES[sheet.segment].label}
+                  <span className="text-[10px] font-bold uppercase tracking-widest border rounded-full px-2 py-0.5 leading-none shrink-0 text-indigo-700 bg-indigo-50 border-indigo-200">
+                    {sheet.segment.name}
                   </span>
                 )}
               </div>
@@ -107,7 +100,6 @@ export function BingoSheetList({ sheets }: { sheets: SheetWithSquares[] }) {
               </div>
             </div>
 
-            {/* Actions — always visible on touch, reveal on hover on desktop */}
             <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 shrink-0">
               <Button size="icon" variant="ghost" asChild
                 className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 h-8 w-8">

@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { SheetBuilder } from "../../SheetBuilder";
 import { updateBingoSheet } from "../../actions";
 import type { SquareInput } from "../../actions";
-import type { SheetSegment } from "@/app/generated/prisma";
 import Link from "next/link";
 import { ChevronLeft, AlertTriangle } from "lucide-react";
 
@@ -17,14 +16,13 @@ export default async function EditBingoSheetPage({
 
   if (isNaN(sheetId)) notFound();
 
-  const [sheet, difficulties, pendingGames] = await Promise.all([
+  const [sheet, difficulties, segments, pendingGames] = await Promise.all([
     prisma.bingoSheet.findUnique({
       where: { id: sheetId },
       include: { squares: { orderBy: { position: "asc" } } },
     }),
     prisma.oddsDifficulty.findMany({ orderBy: { oddsMin: "asc" } }),
-    // Any PENDING/DRAFT game will pick up the edited squares when lockPrices runs —
-    // all sheets participate in every game, so we warn about all upcoming games.
+    prisma.segment.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.game.findMany({
       where: { status: { in: ["PENDING", "DRAFT"] } },
       include: { event: true },
@@ -34,10 +32,9 @@ export default async function EditBingoSheetPage({
 
   if (!sheet) notFound();
 
-  // Bind sheetId into a server action so the client component doesn't need to know it
-  async function handleUpdate(name: string, squares: SquareInput[], segment: SheetSegment | null) {
+  async function handleUpdate(name: string, squares: SquareInput[], segmentId: number | null) {
     "use server";
-    await updateBingoSheet(sheetId, name, squares, segment);
+    await updateBingoSheet(sheetId, name, squares, segmentId);
   }
 
   return (
@@ -55,7 +52,6 @@ export default async function EditBingoSheetPage({
       </h1>
       <p className="text-sm text-slate-500 mb-6">{sheet.name}</p>
 
-      {/* Warning: changes to squares affect upcoming PENDING games */}
       {pendingGames.length > 0 && (
         <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3.5 max-w-2xl">
           <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -99,8 +95,9 @@ export default async function EditBingoSheetPage({
       ) : (
         <SheetBuilder
           difficulties={difficulties}
+          segments={segments}
           defaultName={sheet.name}
-          defaultSegment={sheet.segment}
+          defaultSegmentId={sheet.segmentId}
           defaultSquares={sheet.squares.map(s => ({
             marketId: s.marketId,
             difficultyId: s.difficultyId,

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { OddsDifficulty, SheetSegment } from "@/app/generated/prisma";
+import type { OddsDifficulty, Segment } from "@/app/generated/prisma";
 import type { SquareInput } from "./actions";
 
 type SquareState = { marketId: string; difficultyId: string };
@@ -20,53 +20,31 @@ const POSITION_LABELS = [
   "Bot-left", "Bot-center", "Bot-right",
 ];
 
-const SEGMENTS: {
-  value: SheetSegment;
-  label: string;
-  tiers: string;
-  description: string;
-  color: string;
-  activeColor: string;
-}[] = [
-  {
-    value: "EASY",
-    label: "Easy",
-    tiers: "VIP · High Value",
-    description: "Favourable odds for your best players",
-    color: "border-emerald-200 bg-emerald-50 text-emerald-900",
-    activeColor: "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-400/40",
-  },
-  {
-    value: "MEDIUM",
-    label: "Medium",
-    tiers: "Medium Value · Low Value",
-    description: "Balanced odds for mid-tier players",
-    color: "border-amber-200 bg-amber-50 text-amber-900",
-    activeColor: "border-amber-500 bg-amber-50 ring-2 ring-amber-400/40",
-  },
-  {
-    value: "HARD",
-    label: "Hard",
-    tiers: "Very Low · No Value · New · No Bet 12M",
-    description: "Tougher odds for low-value players",
-    color: "border-red-200 bg-red-50 text-red-900",
-    activeColor: "border-red-500 bg-red-50 ring-2 ring-red-400/40",
-  },
+// Cycling colour palette for segment cards
+const PALETTE = [
+  { base: "border-emerald-200 bg-emerald-50 text-emerald-900", active: "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-400/40" },
+  { base: "border-amber-200 bg-amber-50 text-amber-900",       active: "border-amber-500 bg-amber-50 ring-2 ring-amber-400/40" },
+  { base: "border-rose-200 bg-rose-50 text-rose-900",          active: "border-rose-500 bg-rose-50 ring-2 ring-rose-400/40" },
+  { base: "border-indigo-200 bg-indigo-50 text-indigo-900",    active: "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-400/40" },
+  { base: "border-violet-200 bg-violet-50 text-violet-900",    active: "border-violet-500 bg-violet-50 ring-2 ring-violet-400/40" },
+  { base: "border-sky-200 bg-sky-50 text-sky-900",             active: "border-sky-500 bg-sky-50 ring-2 ring-sky-400/40" },
 ];
 
 type Props = {
   difficulties: OddsDifficulty[];
+  segments: Segment[];
   defaultName?: string;
-  defaultSegment?: SheetSegment | null;
+  defaultSegmentId?: number | null;
   defaultSquares?: Array<{ marketId: number; difficultyId: number }>;
-  onSubmit: (name: string, squares: SquareInput[], segment: SheetSegment | null) => Promise<void>;
+  onSubmit: (name: string, squares: SquareInput[], segmentId: number | null) => Promise<void>;
   submitLabel?: string;
 };
 
 export function SheetBuilder({
   difficulties,
+  segments,
   defaultName = "",
-  defaultSegment = null,
+  defaultSegmentId = null,
   defaultSquares,
   onSubmit,
   submitLabel = "Create Sheet",
@@ -74,7 +52,7 @@ export function SheetBuilder({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState(defaultName);
-  const [segment, setSegment] = useState<SheetSegment | null>(defaultSegment);
+  const [segmentId, setSegmentId] = useState<number | null>(defaultSegmentId);
   const [squares, setSquares] = useState<SquareState[]>(
     defaultSquares
       ? defaultSquares.map(s => ({
@@ -107,7 +85,7 @@ export function SheetBuilder({
           position: i + 1,
           marketId: parseInt(s.marketId),
           difficultyId: parseInt(s.difficultyId),
-        })), segment);
+        })), segmentId);
         router.push("/bingo-sheets");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error saving sheet");
@@ -133,34 +111,38 @@ export function SheetBuilder({
         </div>
       </div>
 
-      {/* Segment */}
+      {/* Segment selector */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Player Segment</p>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {SEGMENTS.map(seg => {
-            const active = segment === seg.value;
-            return (
-              <button
-                key={seg.value}
-                type="button"
-                onClick={() => setSegment(active ? null : seg.value)}
-                className={`rounded-xl border-2 p-3 text-left transition-all duration-150 focus:outline-none ${
-                  active ? seg.activeColor : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
-              >
-                <p className={`text-xs font-bold mb-0.5 ${active ? "" : "text-slate-700"}`}>{seg.label}</p>
-                <p className={`text-[10px] font-semibold leading-snug ${active ? "" : "text-slate-500"}`}>
-                  {seg.tiers}
-                </p>
-                <p className={`text-[10px] mt-1 leading-snug ${active ? "" : "text-slate-400"}`}>
-                  {seg.description}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-        {!segment && (
-          <p className="text-[11px] text-slate-400 mt-2">Optional — leave unset to apply to all players</p>
+        {segments.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            No segments defined yet.{" "}
+            <a href="/segments" className="text-indigo-600 font-semibold hover:underline">Create one →</a>
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-2">
+              {segments.map((seg, i) => {
+                const colors = PALETTE[i % PALETTE.length];
+                const active = segmentId === seg.id;
+                return (
+                  <button
+                    key={seg.id}
+                    type="button"
+                    onClick={() => setSegmentId(active ? null : seg.id)}
+                    className={`rounded-xl border-2 px-4 py-2 text-sm font-bold transition-all duration-150 focus:outline-none ${
+                      active ? colors.active : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                    }`}
+                  >
+                    {seg.name}
+                  </button>
+                );
+              })}
+            </div>
+            {!segmentId && (
+              <p className="text-[11px] text-slate-400 mt-2">Optional — leave unset to apply to all players</p>
+            )}
+          </>
         )}
       </div>
 

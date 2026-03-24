@@ -8,6 +8,7 @@ export default async function BingoSheetsPage() {
   const sheets = await prisma.bingoSheet.findMany({
     orderBy: { createdAt: "desc" },
     include: {
+      segment: true,
       squares: {
         orderBy: { position: "asc" },
         include: { difficulty: true },

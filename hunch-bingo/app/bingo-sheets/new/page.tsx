@@ -5,9 +5,10 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 export default async function NewBingoSheetPage() {
-  const difficulties = await prisma.oddsDifficulty.findMany({
-    orderBy: { oddsMin: "asc" },
-  });
+  const [difficulties, segments] = await Promise.all([
+    prisma.oddsDifficulty.findMany({ orderBy: { oddsMin: "asc" } }),
+    prisma.segment.findMany({ orderBy: { createdAt: "asc" } }),
+  ]);
 
   return (
     <div className="animate-enter">
@@ -31,6 +32,7 @@ export default async function NewBingoSheetPage() {
       ) : (
         <SheetBuilder
           difficulties={difficulties}
+          segments={segments}
           onSubmit={createBingoSheet}
           submitLabel="Create Sheet"
         />

@@ -7,6 +7,16 @@ datasource db {
   provider = "postgresql"
 }
 
+model Segment {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  sheets BingoSheet[]
+
+  @@map("segments")
+}
+
 model OddsDifficulty {
   id        Int      @id @default(autoincrement())
   name      String   @unique
@@ -19,17 +29,12 @@ model OddsDifficulty {
   @@map("odds_difficulties")
 }
 
-enum SheetSegment {
-  EASY
-  MEDIUM
-  HARD
-}
-
 model BingoSheet {
-  id        Int           @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  segment   SheetSegment?
-  createdAt DateTime      @default(now())
+  segmentId Int?
+  segment   Segment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
 
   squares          BingoSheetSquare[]
   gameSheetResults GameSheetResult[]

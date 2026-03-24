@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import type { SheetSegment } from "@/app/generated/prisma";
 
 export type SquareInput = {
   position: number;
@@ -10,7 +9,7 @@ export type SquareInput = {
   difficultyId: number;
 };
 
-export async function createBingoSheet(name: string, squares: SquareInput[], segment: SheetSegment | null) {
+export async function createBingoSheet(name: string, squares: SquareInput[], segmentId: number | null) {
   if (!name.trim()) throw new Error("Sheet name is required");
   if (squares.length !== 9) throw new Error("Exactly 9 squares required");
 
@@ -21,7 +20,7 @@ export async function createBingoSheet(name: string, squares: SquareInput[], seg
   await prisma.bingoSheet.create({
     data: {
       name,
-      segment: segment ?? undefined,
+      segmentId: segmentId ?? undefined,
       squares: {
         create: squares.map((s) => ({
           position: s.position,
@@ -40,7 +39,7 @@ export async function deleteBingoSheet(id: number) {
   revalidatePath("/bingo-sheets");
 }
 
-export async function updateBingoSheet(id: number, name: string, squares: SquareInput[], segment: SheetSegment | null) {
+export async function updateBingoSheet(id: number, name: string, squares: SquareInput[], segmentId: number | null) {
   if (!name.trim()) throw new Error("Sheet name is required");
   if (squares.length !== 9) throw new Error("Exactly 9 squares required");
 
@@ -51,14 +50,13 @@ export async function updateBingoSheet(id: number, name: string, squares: Square
   const sheet = await prisma.bingoSheet.findUnique({ where: { id } });
   if (!sheet) throw new Error("Sheet not found");
 
-  // Delete-and-recreate squares atomically — cleaner than upsert for a fixed 9-slot grid
   await prisma.$transaction(async (tx) => {
     await tx.bingoSheetSquare.deleteMany({ where: { sheetId: id } });
     await tx.bingoSheet.update({
       where: { id },
       data: {
         name,
-        segment: segment ?? null,
+        segmentId: segmentId ?? null,
         squares: {
           create: squares.map(s => ({
             position: s.position,
