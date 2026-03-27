@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Trophy, Calendar, Sliders, Home, Menu, X, Tag } from "lucide-react";
+import { LayoutGrid, Trophy, Calendar, Sliders, Home, Menu, X, Tag, Zap, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
 const nav = [
-  { href: "/",             label: "Dashboard",    icon: Home       },
-  { href: "/games",        label: "Games",        icon: Trophy     },
-  { href: "/bingo-sheets", label: "Bingo Sheets",  icon: LayoutGrid },
-  { href: "/events",       label: "Events",        icon: Calendar   },
-  { href: "/segments",     label: "Segments",      icon: Tag        },
-  { href: "/difficulties", label: "Difficulties",  icon: Sliders    },
+  { href: "/",              label: "Dashboard",     icon: Home        },
+  { href: "/games",         label: "Games",         icon: Trophy      },
+  { href: "/weekend-setup", label: "Weekend Setup", icon: Zap         },
+  { href: "/analytics",     label: "Analytics",     icon: TrendingUp  },
+  { href: "/bingo-sheets",  label: "Bingo Sheets",  icon: LayoutGrid  },
+  { href: "/events",        label: "Events",        icon: Calendar    },
+  { href: "/segments",      label: "Segments",      icon: Tag         },
+  { href: "/difficulties",  label: "Difficulties",  icon: Sliders     },
 ];
 
 export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {

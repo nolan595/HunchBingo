@@ -8,6 +8,7 @@ import {
   AlertTriangle, Zap, TrendingUp, Calendar, LayoutGrid,
 } from "lucide-react";
 import type { Game, ExternalEvent, GameSheetResult, GameSquareResult } from "@/app/generated/prisma";
+import { BatchResultButton } from "./BatchResultButton";
 
 type GameWithData = Game & {
   event: ExternalEvent;
@@ -336,12 +337,14 @@ export default async function DashboardPage() {
       {/* Action required — CLOSED games need manual resulting */}
       {closed.length > 0 && (
         <section>
-          <SectionHead
-            label="Action Required"
-            count={closed.length}
-            icon={AlertTriangle}
-            iconFg="text-amber-500"
-          />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+              <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Action Required</h2>
+              <span className="text-[11px] font-bold text-slate-300 tabular-nums">({closed.length})</span>
+            </div>
+            <BatchResultButton closedCount={closed.length} />
+          </div>
           <div className="space-y-2">
             {closed.map((g, i) => <ActionCard key={g.id} game={g} index={i} />)}
           </div>

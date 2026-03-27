@@ -89,3 +89,27 @@ export async function triggerResulting(gameId: number) {
 
   revalidatePath(`/games/${gameId}`);
 }
+
+export async function batchResultAllClosed(): Promise<{ resulted: number; errors: string[] }> {
+  const closedGames = await prisma.game.findMany({
+    where: { status: "CLOSED" },
+    select: { id: true, name: true },
+  });
+
+  let resulted = 0;
+  const errors: string[] = [];
+
+  for (const game of closedGames) {
+    try {
+      await triggerResulting(game.id);
+      resulted++;
+    } catch (e) {
+      errors.push(`${game.name}: ${e instanceof Error ? e.message : "Unknown error"}`);
+    }
+  }
+
+  revalidatePath("/");
+  revalidatePath("/games");
+
+  return { resulted, errors };
+}

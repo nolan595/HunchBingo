@@ -17,35 +17,52 @@ export async function lockPrices(gameId: number) {
     include: { squares: { include: { difficulty: true } } },
   });
 
-  await prisma.$transaction(async (tx) => {
-    await tx.game.update({ where: { id: gameId }, data: { status: "OPEN" } });
+  // Build all square data before touching the DB — keeps the transaction short
+  type SquarePayload = {
+    position: number;
+    marketId: number;
+    marketName: string | null;
+    outcomeId: number | null;
+    outcomeName: string | null;
+    capturedPrice: number | null;
+    status: "PENDING" | "NO_MATCH";
+  };
+  const sheetPayloads: { sheetId: number; squares: SquarePayload[] }[] = sheets.map((sheet) => ({
+    sheetId: sheet.id,
+    squares: sheet.squares.map((square) => {
+      const match = findOutcomeForMarket(
+        odds,
+        square.marketId,
+        square.difficulty.oddsMin,
+        square.difficulty.oddsMax
+      );
+      return {
+        position: square.position,
+        marketId: square.marketId,
+        marketName: match?.marketName ?? null,
+        outcomeId: match?.outcomeId ?? null,
+        outcomeName: match?.name ?? null,
+        capturedPrice: match?.price ?? null,
+        status: match ? "PENDING" : "NO_MATCH",
+      };
+    }),
+  }));
 
-    for (const sheet of sheets) {
-      const gameSheet = await tx.gameSheetResult.create({
-        data: { gameId, sheetId: sheet.id },
-      });
+  // Transaction is now pure DB writes — no async I/O, no risk of timeout
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.game.update({ where: { id: gameId }, data: { status: "OPEN" } });
 
-      for (const square of sheet.squares) {
-        const match = findOutcomeForMarket(
-          odds,
-          square.marketId,
-          square.difficulty.oddsMin,
-          square.difficulty.oddsMax
-        );
+      for (const { sheetId, squares } of sheetPayloads) {
+        const gameSheet = await tx.gameSheetResult.create({
+          data: { gameId, sheetId },
+        });
 
-        await tx.gameSquareResult.create({
-          data: {
-            gameSheetId: gameSheet.id,
-            position: square.position,
-            marketId: square.marketId,
-            marketName: match?.marketName ?? null,
-            outcomeId: match?.outcomeId ?? null,
-            outcomeName: match?.name ?? null,
-            capturedPrice: match?.price ?? null,
-            status: match ? "PENDING" : "NO_MATCH",
-          },
+        await tx.gameSquareResult.createMany({
+          data: squares.map((s) => ({ gameSheetId: gameSheet.id, ...s })),
         });
       }
-    }
-  });
+    },
+    { timeout: 30_000 }
+  );
 }

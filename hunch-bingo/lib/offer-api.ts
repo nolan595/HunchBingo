@@ -91,6 +91,35 @@ export async function fetchEvent(
   return json.data?.[0] ?? null;
 }
 
+export type TopTenEvent = {
+  eventId: number;
+  matchName: string;
+  matchDate: string;
+  sportId?: number;
+  sportName?: string;
+  categoryId?: number;
+  categoryName?: string;
+  tournamentId?: number;
+  tournamentName?: string;
+  homeTeamName?: string;
+  awayTeamName?: string;
+};
+
+export async function fetchTopTenEvents(): Promise<TopTenEvent[]> {
+  const url = `${BASE}/v2/${LANG}/events/topten`;
+
+  const res = await fetch(url, {
+    headers: { accept: "application/json" },
+    next: { revalidate: 0 },
+  });
+
+  if (!res.ok) throw new Error(`Offer API error: ${res.status}`);
+
+  const json = await res.json() as { error?: boolean; data?: TopTenEvent[] };
+  const items: TopTenEvent[] = Array.isArray(json.data) ? json.data : [];
+  return items.filter((e) => !e.sportId || e.sportId === 5);
+}
+
 export function findOutcomeForMarket(
   outcomes: OfferOutcome[],
   marketId: number,

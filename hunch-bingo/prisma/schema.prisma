@@ -95,7 +95,7 @@ model GameSheetResult {
   gameId      Int
   game        Game       @relation(fields: [gameId], references: [id], onDelete: Cascade)
   sheetId     Int
-  sheet       BingoSheet @relation(fields: [sheetId], references: [id])
+  sheet       BingoSheet @relation(fields: [sheetId], references: [id], onDelete: Cascade)
   connect3    Boolean?
   score       Int?
   completedAt DateTime?

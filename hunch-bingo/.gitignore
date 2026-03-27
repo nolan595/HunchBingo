@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# playwright screenshots
+*.png
+*.jpeg
+
 # debug
 npm-debug.log*
 yarn-debug.log*
