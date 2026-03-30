@@ -13,6 +13,8 @@ const LINES = [
   [0, 3, 6], // col 1
   [1, 4, 7], // col 2
   [2, 5, 8], // col 3
+  [0, 4, 8], // diagonal top-left → bottom-right
+  [2, 4, 6], // diagonal top-right → bottom-left
 ];
 
 export function evaluateConnect3(statuses: SquareStatus[]): {
