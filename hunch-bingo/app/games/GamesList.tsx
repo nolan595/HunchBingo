@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { createGame, deleteGame } from "./actions";
 import type { Game, ExternalEvent } from "@/app/generated/prisma";
-import { Plus, Trash2, ArrowRight, Trophy } from "lucide-react";
+import { Plus, Trash2, ArrowRight, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 type GameWithEvent = Game & { event: ExternalEvent };
@@ -98,7 +98,19 @@ function fmt(d: Date | string) {
   });
 }
 
-export function GamesList({ games, events }: { games: GameWithEvent[]; events: ExternalEvent[] }) {
+export function GamesList({
+  games,
+  events,
+  total,
+  page,
+  totalPages,
+}: {
+  games: GameWithEvent[];
+  events: ExternalEvent[];
+  total: number;
+  page: number;
+  totalPages: number;
+}) {
   const [createOpen, setCreateOpen] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -116,9 +128,9 @@ export function GamesList({ games, events }: { games: GameWithEvent[]; events: E
           <p className="text-sm text-slate-500 mt-1">Simulation rounds tied to real sport events</p>
         </div>
         <div className="flex items-center gap-3">
-          {games.length > 0 && (
+          {total > 0 && (
             <span className="text-sm text-slate-400 font-semibold tabular-nums hidden sm:block">
-              {games.length} {games.length === 1 ? "game" : "games"}
+              {total} {total === 1 ? "game" : "games"}
             </span>
           )}
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -237,6 +249,28 @@ export function GamesList({ games, events }: { games: GameWithEvent[]; events: E
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-slate-400 tabular-nums">
+            Page <span className="font-semibold text-slate-600">{page}</span> of{" "}
+            <span className="font-semibold text-slate-600">{totalPages}</span>
+          </p>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="outline" asChild disabled={page <= 1}>
+              <Link href={`/games?page=${page - 1}`} aria-disabled={page <= 1}>
+                <ChevronLeft className="h-3.5 w-3.5" /> Prev
+              </Link>
+            </Button>
+            <Button size="sm" variant="outline" asChild disabled={page >= totalPages}>
+              <Link href={`/games?page=${page + 1}`} aria-disabled={page >= totalPages}>
+                Next <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>
