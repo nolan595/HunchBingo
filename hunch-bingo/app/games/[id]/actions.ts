@@ -51,41 +51,58 @@ export async function triggerResulting(gameId: number) {
 
   const oddsResults = event.oddsResults ?? [];
 
-  await prisma.$transaction(async (tx) => {
-    for (const sheet of game.gameSheetResults) {
-      const squareStatuses: SquareStatus[] = [];
+  // Pre-compute all statuses before touching the DB — keeps the transaction short
+  type SheetPayload = {
+    sheetResultId: number;
+    connect3: boolean;
+    score: number;
+    squareUpdates: { id: number; status: SquareStatus }[];
+  };
 
-      for (const sq of sheet.squares.sort((a, b) => a.position - b.position)) {
-        let status: SquareStatus = sq.status;
+  const sheetPayloads: SheetPayload[] = game.gameSheetResults.map((sheet) => {
+    const squareUpdates: { id: number; status: SquareStatus }[] = [];
+    const squareStatuses: SquareStatus[] = [];
 
-        if (sq.status === "PENDING" && sq.outcomeId !== null) {
-          const result = oddsResults.find((o) => o.outcomeId === sq.outcomeId);
-          if (result) {
-            status = result.status === "win" ? "WON" : "LOST";
-          }
+    for (const sq of sheet.squares.sort((a, b) => a.position - b.position)) {
+      let status: SquareStatus = sq.status;
+
+      if (sq.status === "PENDING" && sq.outcomeId !== null) {
+        const result = oddsResults.find((o) => o.outcomeId === sq.outcomeId);
+        if (result) {
+          status = result.status === "win" ? "WON" : "LOST";
         }
-
-        await tx.gameSquareResult.update({
-          where: { id: sq.id },
-          data: { status },
-        });
-
-        squareStatuses.push(status);
       }
 
-      const { connect3, score } = evaluateConnect3(squareStatuses);
-
-      await tx.gameSheetResult.update({
-        where: { id: sheet.id },
-        data: { connect3, score, completedAt: new Date() },
-      });
+      squareUpdates.push({ id: sq.id, status });
+      squareStatuses.push(status);
     }
 
-    await tx.game.update({
-      where: { id: gameId },
-      data: { status: "COMPLETED" },
-    });
+    const { connect3, score } = evaluateConnect3(squareStatuses);
+    return { sheetResultId: sheet.id, connect3, score, squareUpdates };
   });
+
+  // Transaction is now pure parallel DB writes — no sequential awaits, no computation
+  await prisma.$transaction(
+    async (tx) => {
+      await Promise.all(
+        sheetPayloads.flatMap(({ sheetResultId, connect3, score, squareUpdates }) => [
+          ...squareUpdates.map(({ id, status }) =>
+            tx.gameSquareResult.update({ where: { id }, data: { status } })
+          ),
+          tx.gameSheetResult.update({
+            where: { id: sheetResultId },
+            data: { connect3, score, completedAt: new Date() },
+          }),
+        ])
+      );
+
+      await tx.game.update({
+        where: { id: gameId },
+        data: { status: "COMPLETED" },
+      });
+    },
+    { timeout: 30_000 }
+  );
 
   revalidatePath(`/games/${gameId}`);
 }
