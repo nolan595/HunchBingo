@@ -42,6 +42,8 @@ export async function deleteBingoSheet(id: number) {
 export async function toggleBingoSheet(id: number, enabled: boolean) {
   await prisma.bingoSheet.update({ where: { id }, data: { enabled } });
   revalidatePath("/bingo-sheets");
+  revalidatePath("/");
+  revalidatePath("/analytics");
 }
 
 export async function updateBingoSheet(id: number, name: string, squares: SquareInput[], segmentId: number | null) {

@@ -263,11 +263,12 @@ export default async function DashboardPage() {
       include: {
         event: true,
         gameSheetResults: {
+          where: { sheet: { enabled: true } },
           select: { connect3: true, squares: { select: { status: true } } },
         },
       },
     }),
-    prisma.bingoSheet.count(),
+    prisma.bingoSheet.count({ where: { enabled: true } }),
     prisma.externalEvent.count(),
   ]);
 

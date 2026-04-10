@@ -26,7 +26,7 @@ export async function getSheetPerformance(segmentId?: number): Promise<SheetPerf
     where: {
       connect3: { not: null },
       game: { status: "COMPLETED" },
-      ...(segmentId ? { sheet: { segmentId } } : {}),
+      sheet: { enabled: true, ...(segmentId ? { segmentId } : {}) },
     },
     include: {
       sheet: { include: { segment: true } },
@@ -106,7 +106,7 @@ export async function getWeeklyPerformance(segmentId?: number): Promise<{
     where: {
       connect3: { not: null },
       game: { status: "COMPLETED" },
-      ...(segmentId ? { sheet: { segmentId } } : {}),
+      sheet: { enabled: true, ...(segmentId ? { segmentId } : {}) },
     },
     include: {
       sheet: { include: { segment: true } },
@@ -154,7 +154,7 @@ export type MarketStatRow = {
 
 export async function getMarketStats(): Promise<MarketStatRow[]> {
   const squares = await prisma.gameSquareResult.findMany({
-    where: { gameSheet: { game: { status: "COMPLETED" } } },
+    where: { gameSheet: { game: { status: "COMPLETED" }, sheet: { enabled: true } } },
     select: { marketId: true, marketName: true, status: true },
   });
 
@@ -200,7 +200,7 @@ export type DifficultyStatRow = {
 
 export async function getDifficultyStats(): Promise<DifficultyStatRow[]> {
   const gameSheets = await prisma.gameSheetResult.findMany({
-    where: { game: { status: "COMPLETED" } },
+    where: { game: { status: "COMPLETED" }, sheet: { enabled: true } },
     include: {
       squares: true,
       sheet: {
