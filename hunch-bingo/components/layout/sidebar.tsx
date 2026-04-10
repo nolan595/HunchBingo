@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutGrid, Trophy, Calendar, Sliders, Home, Menu, X, Tag, Zap, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { RefreshButton } from "./refresh-button";
 
 const nav = [
   { href: "/",              label: "Dashboard",     icon: Home        },
@@ -102,7 +103,7 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
         })}
       </nav>
 
-      {/* Footer — pulsing live indicator */}
+      {/* Footer — pulsing live indicator + refresh */}
       <div className="px-5 py-4 border-t border-slate-100">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2 shrink-0">
@@ -110,6 +111,9 @@ export function Sidebar({ openGamesCount = 0 }: { openGamesCount?: number }) {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
           <span className="text-[11px] text-slate-400 font-semibold tracking-wide">Live · v0.1</span>
+          <span className="ml-auto">
+            <RefreshButton />
+          </span>
         </div>
       </div>
     </>

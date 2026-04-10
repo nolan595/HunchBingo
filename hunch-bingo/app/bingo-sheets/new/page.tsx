@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { SheetBuilder } from "../SheetBuilder";
 import { createBingoSheet } from "../actions";
