@@ -6,7 +6,7 @@ import type { SquareStatus } from "@/app/generated/prisma";
 // 4 5 6
 // 7 8 9
 
-const LINES = [
+export const LINES = [
   [0, 1, 2], // row 1
   [3, 4, 5], // row 2
   [6, 7, 8], // row 3
@@ -17,13 +17,16 @@ const LINES = [
   [2, 4, 6], // diagonal top-right → bottom-left
 ];
 
+export const TOTAL_LINES = LINES.length;
+
 export function evaluateConnect3(statuses: SquareStatus[]): {
   connect3: boolean;
   score: number;
 } {
-  const score = statuses.filter((s) => s === "WON").length;
-  const connect3 = LINES.some((line) =>
+  // score = number of completed lines (not won squares)
+  const score = LINES.filter((line) =>
     line.every((i) => statuses[i] === "WON")
-  );
+  ).length;
+  const connect3 = score > 0;
   return { connect3, score };
 }

@@ -151,7 +151,7 @@ export default async function AnalyticsPage({
                     <th className="px-4 py-3 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Games</th>
                     <th className="px-4 py-3 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">Connect-3s</th>
                     <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rate</th>
-                    <th className="px-4 py-3 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden lg:table-cell">Avg Score</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden lg:table-cell">Avg Lines</th>
                     <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">Trend</th>
                   </tr>
                 </thead>

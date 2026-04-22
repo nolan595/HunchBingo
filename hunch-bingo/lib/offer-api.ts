@@ -120,6 +120,26 @@ export async function fetchTopTenEvents(): Promise<TopTenEvent[]> {
   return items.filter((e) => !e.sportId || e.sportId === 5);
 }
 
+// Fixed pool of over/under backup market IDs tried (in random order) when a
+// square's primary market has no outcome within the difficulty range.
+export const BACKUP_MARKET_IDS = [543, 878, 531, 200748];
+
+export function findBackupOutcome(
+  outcomes: OfferOutcome[],
+  oddsMin: number,
+  oddsMax: number,
+  excludeMarketIds: Set<number>,
+): OfferOutcome | null {
+  // Shuffle so we don't always favour the same market when multiple are viable
+  const pool = [...BACKUP_MARKET_IDS].sort(() => Math.random() - 0.5);
+  for (const marketId of pool) {
+    if (excludeMarketIds.has(marketId)) continue;
+    const match = findOutcomeForMarket(outcomes, marketId, oddsMin, oddsMax);
+    if (match) return match;
+  }
+  return null;
+}
+
 export function findOutcomeForMarket(
   outcomes: OfferOutcome[],
   marketId: number,

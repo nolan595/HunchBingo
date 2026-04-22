@@ -11,10 +11,11 @@ const badgeVariants = cva(
         pending:   "bg-amber-50  text-amber-700  border-amber-200",
         open:      "bg-blue-50   text-blue-700   border-blue-200",
         closed:    "bg-orange-50 text-orange-700 border-orange-200",
-        completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        won:       "bg-emerald-50 text-emerald-700 border-emerald-200",
-        lost:      "bg-red-50    text-red-700    border-red-200",
-        nomatch:   "bg-slate-100 text-slate-500 border-slate-200",
+        completed:  "bg-emerald-50  text-emerald-700  border-emerald-200",
+        won:        "bg-emerald-50  text-emerald-700  border-emerald-200",
+        lost:       "bg-red-50      text-red-700      border-red-200",
+        nomatch:    "bg-slate-100   text-slate-500    border-slate-200",
+        fullsheet:  "bg-amber-50    text-amber-700    border-amber-300",
       },
     },
     defaultVariants: { variant: "default" },
@@ -22,10 +23,11 @@ const badgeVariants = cva(
 );
 
 const DOT_COLORS: Partial<Record<NonNullable<BadgeProps["variant"]>, string>> = {
-  open:      "bg-blue-500 animate-pulse",
-  pending:   "bg-amber-500",
-  completed: "bg-emerald-500",
-  won:       "bg-emerald-500",
+  open:       "bg-blue-500 animate-pulse",
+  pending:    "bg-amber-500",
+  completed:  "bg-emerald-500",
+  won:        "bg-emerald-500",
+  fullsheet:  "bg-amber-500",
 };
 
 export interface BadgeProps

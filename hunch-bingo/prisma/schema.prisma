@@ -124,6 +124,7 @@ model GameSquareResult {
   outcomeName   String?
   capturedPrice Float?
   status        SquareStatus    @default(PENDING)
+  usedBackup    Boolean         @default(false)
 
   @@map("game_square_results")
 }

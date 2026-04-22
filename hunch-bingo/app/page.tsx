@@ -7,14 +7,13 @@ import {
   Activity, Clock, ArrowRight, Trophy, ChevronRight,
   AlertTriangle, Zap, TrendingUp, Calendar, LayoutGrid,
 } from "lucide-react";
-import type { Game, ExternalEvent, GameSheetResult, GameSquareResult } from "@/app/generated/prisma";
+import type { Game, ExternalEvent, GameSheetResult } from "@/app/generated/prisma";
 import { BatchResultButton } from "./BatchResultButton";
+import { TOTAL_LINES } from "@/lib/connect3";
 
 type GameWithData = Game & {
   event: ExternalEvent;
-  gameSheetResults: (Pick<GameSheetResult, "connect3"> & {
-    squares: Pick<GameSquareResult, "status">[];
-  })[];
+  gameSheetResults: Pick<GameSheetResult, "connect3" | "score">[];
 };
 
 function fmt(d: Date | string) {
@@ -23,13 +22,13 @@ function fmt(d: Date | string) {
   });
 }
 
-function squareStats(game: GameWithData) {
-  const allSquares = game.gameSheetResults.flatMap(r => r.squares);
-  const won   = allSquares.filter(s => s.status === "WON").length;
-  const total = allSquares.length;
-  const rate  = total > 0 ? won / total : null;
+function lineStats(game: GameWithData) {
+  const sheets = game.gameSheetResults.filter(r => r.score !== null);
+  const wonLines  = sheets.reduce((s, r) => s + (r.score ?? 0), 0);
+  const totalLines = sheets.length * TOTAL_LINES;
+  const rate  = totalLines > 0 ? wonLines / totalLines : null;
   const sheetCount = game.gameSheetResults.length;
-  return { won, total, rate, sheetCount };
+  return { won: wonLines, total: totalLines, rate, sheetCount };
 }
 
 // ── KPI card — slim horizontal layout ────────────────────────────────
@@ -108,7 +107,7 @@ function SectionHead({
 
 // ── Closed game card — "Action Required" amber treatment ──────────────
 function ActionCard({ game, index }: { game: GameWithData; index: number }) {
-  const { sheetCount } = squareStats(game);
+  const { sheetCount } = lineStats(game);
   return (
     <Link
       href={`/games/${game.id}`}
@@ -150,7 +149,7 @@ function ActionCard({ game, index }: { game: GameWithData; index: number }) {
 
 // ── Active game card — OPEN or PENDING ───────────────────────────────
 function ActiveCard({ game, index }: { game: GameWithData; index: number }) {
-  const { sheetCount } = squareStats(game);
+  const { sheetCount } = lineStats(game);
   const isOpen = game.status === "OPEN";
 
   return (
@@ -209,7 +208,7 @@ function ActiveCard({ game, index }: { game: GameWithData; index: number }) {
 
 // ── Completed result row ──────────────────────────────────────────────
 function ResultRow({ game, isLast }: { game: GameWithData; isLast: boolean }) {
-  const { won, total, rate } = squareStats(game);
+  const { won, total, rate } = lineStats(game);
   const color =
     rate === null ? null
     : rate >= 0.5  ? { text: "text-emerald-600", bar: "bg-emerald-400" }
@@ -264,7 +263,7 @@ export default async function DashboardPage() {
         event: true,
         gameSheetResults: {
           where: { sheet: { enabled: true } },
-          select: { connect3: true, squares: { select: { status: true } } },
+          select: { connect3: true, score: true },
         },
       },
     }),
@@ -277,9 +276,9 @@ export default async function DashboardPage() {
   const pending   = games.filter(g => g.status === "PENDING");
   const completed = games.filter(g => g.status === "COMPLETED");
 
-  const allSquares = completed.flatMap(g => g.gameSheetResults.flatMap(r => r.squares));
-  const avgRate    = allSquares.length > 0
-    ? allSquares.filter(s => s.status === "WON").length / allSquares.length
+  const completedSheets = completed.flatMap(g => g.gameSheetResults.filter(r => r.score !== null));
+  const avgRate = completedSheets.length > 0
+    ? completedSheets.reduce((s, r) => s + (r.score ?? 0), 0) / (completedSheets.length * TOTAL_LINES)
     : null;
 
   const today = new Date().toLocaleDateString("en-GB", {
@@ -326,7 +325,7 @@ export default async function DashboardPage() {
           iconFg="text-blue-500"
         />
         <KpiCard
-          label="Connect-3 Avg"
+          label="Lines Avg"
           value={avgRate !== null ? `${Math.round(avgRate * 100)}%` : "—"}
           sub={completed.length > 0 ? `across ${completed.length} completed game${completed.length !== 1 ? "s" : ""}` : "no completed games yet"}
           icon={TrendingUp}

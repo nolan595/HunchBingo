@@ -8,6 +8,7 @@ import type {
   Game, ExternalEvent, GameSheetResult, GameSquareResult, BingoSheet,
 } from "@/app/generated/prisma";
 import { CheckCircle2, XCircle, AlertCircle, Clock, LayoutGrid } from "lucide-react";
+import { TOTAL_LINES, LINES } from "@/lib/connect3";
 
 type SquareWithResult  = GameSquareResult;
 type SheetWithSquares  = GameSheetResult & { sheet: BingoSheet; squares: SquareWithResult[] };
@@ -17,11 +18,18 @@ const STATUS_LABELS: Record<string, string>                                     
 const STATUS_VARIANTS: Record<string,"draft"|"pending"|"open"|"closed"|"completed">   = { DRAFT:"draft", PENDING:"pending", OPEN:"open", CLOSED:"closed", COMPLETED:"completed" };
 const NEXT_ACTION_LABELS: Record<string, string>                                       = { PENDING:"Open Early (Lock Prices)", OPEN:"Close Round" };
 
+const BackupPill = () => (
+  <span className="absolute top-1 right-1 z-20 text-[7px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-300 rounded px-1 leading-tight">
+    Backup
+  </span>
+);
+
 function SquareCell({ sq }: { sq: SquareWithResult }) {
   const base = "relative rounded-xl border-2 p-2 text-center min-h-[80px] flex flex-col items-center justify-center gap-1 overflow-hidden transition-all duration-150";
 
   if (sq.status === "WON") return (
     <div className={`${base} border-emerald-300 bg-gradient-to-br from-emerald-50 to-emerald-100/80`}>
+      {sq.usedBackup && <BackupPill />}
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] pointer-events-none">
         <CheckCircle2 className="h-14 w-14 text-emerald-600" />
       </div>
@@ -35,6 +43,7 @@ function SquareCell({ sq }: { sq: SquareWithResult }) {
 
   if (sq.status === "LOST") return (
     <div className={`${base} border-red-200 bg-gradient-to-br from-red-50 to-red-100/60`}>
+      {sq.usedBackup && <BackupPill />}
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] pointer-events-none">
         <XCircle className="h-14 w-14 text-red-500" />
       </div>
@@ -56,6 +65,7 @@ function SquareCell({ sq }: { sq: SquareWithResult }) {
 
   return (
     <div className={`${base} border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50/60`}>
+      {sq.usedBackup && <BackupPill />}
       <div className="h-6 w-6 rounded-full border-2 border-blue-200 flex items-center justify-center">
         <Clock className="h-3 w-3 text-blue-400" />
       </div>
@@ -67,9 +77,21 @@ function SquareCell({ sq }: { sq: SquareWithResult }) {
   );
 }
 
+function gridCenter(pos: number): [number, number] {
+  return [pos % 3 + 0.5, Math.floor(pos / 3) + 0.5];
+}
+
 function SheetResultCard({ sheetResult }: { sheetResult: SheetWithSquares }) {
   const sorted = [...sheetResult.squares].sort((a, b) => a.position - b.position);
-  const wonCount = sheetResult.squares.filter(s => s.status === "WON").length;
+
+  const completedLineIndices = sorted.length >= 9
+    ? LINES.reduce<number[]>((acc, line, i) => {
+        if (line.every(idx => sorted[idx]?.status === "WON")) acc.push(i);
+        return acc;
+      }, [])
+    : [];
+
+  const isFullSheet = sorted.length >= 9 && sorted.every(sq => sq.status === "WON");
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-4 group">
@@ -83,18 +105,42 @@ function SheetResultCard({ sheetResult }: { sheetResult: SheetWithSquares }) {
         <div className="flex items-center gap-2">
           {sheetResult.score !== null && (
             <span className="text-xs text-slate-400 font-mono tabular-nums font-semibold">
-              {wonCount}/9
+              {sheetResult.score}/{TOTAL_LINES} lines
             </span>
           )}
           {sheetResult.connect3 !== null && (
-            <Badge variant={sheetResult.connect3 ? "completed" : "lost"}>
-              {sheetResult.connect3 ? "Connect 3" : "No Connect 3"}
+            <Badge variant={isFullSheet ? "fullsheet" : sheetResult.connect3 ? "completed" : "lost"}>
+              {isFullSheet ? "Full Sheet" : sheetResult.connect3 ? "Connect 3" : "No Connect 3"}
             </Badge>
           )}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        {sorted.map(sq => <SquareCell key={sq.id} sq={sq} />)}
+      <div className="relative">
+        <div className="grid grid-cols-3 gap-2">
+          {sorted.map(sq => <SquareCell key={sq.id} sq={sq} />)}
+        </div>
+        {completedLineIndices.length > 0 && (
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 3 3"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            {completedLineIndices.map(lineIdx => {
+              const [a, , c] = LINES[lineIdx];
+              const [x1, y1] = gridCenter(a);
+              const [x2, y2] = gridCenter(c);
+              return (
+                <g key={lineIdx}>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke="#10b981" strokeWidth="0.22" strokeOpacity="0.2" strokeLinecap="round" />
+                  <line x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke="#10b981" strokeWidth="0.07" strokeOpacity="0.9" strokeLinecap="round" />
+                </g>
+              );
+            })}
+          </svg>
+        )}
       </div>
     </div>
   );
