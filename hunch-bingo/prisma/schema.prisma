@@ -48,7 +48,7 @@ model BingoSheetSquare {
   sheetId      Int
   sheet        BingoSheet     @relation(fields: [sheetId], references: [id], onDelete: Cascade)
   position     Int            // 1-9
-  marketId     Int
+  marketIds    Int[]          // Priority-ordered list of market IDs to try at lock time
   difficultyId Int
   difficulty   OddsDifficulty @relation(fields: [difficultyId], references: [id])
 
@@ -57,10 +57,11 @@ model BingoSheetSquare {
 }
 
 model ExternalEvent {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   name            String
-  externalEventId String   @unique
-  createdAt       DateTime @default(now())
+  externalEventId String    @unique
+  matchDate       DateTime?
+  createdAt       DateTime  @default(now())
 
   games Game[]
 

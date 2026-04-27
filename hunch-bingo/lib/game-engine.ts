@@ -29,40 +29,34 @@ export async function lockPrices(gameId: number) {
     usedBackup: boolean;
   };
   const sheetPayloads: { sheetId: number; squares: SquarePayload[] }[] = sheets.map((sheet) => {
-    // Pre-seed with all primary marketIds so backups never collide with them
-    const usedMarketIds = new Set(sheet.squares.map((sq) => sq.marketId));
+    // Pre-seed with all candidate marketIds from all squares so backups never collide
+    const usedMarketIds = new Set(sheet.squares.flatMap((sq) => sq.marketIds));
 
     const squares: SquarePayload[] = sheet.squares.map((square) => {
-      const match = findOutcomeForMarket(
-        odds,
-        square.marketId,
-        square.difficulty.oddsMin,
-        square.difficulty.oddsMax
-      );
+      const { oddsMin, oddsMax } = square.difficulty;
 
-      if (match) {
-        return {
-          position: square.position,
-          marketId: square.marketId,
-          marketName: match.marketName,
-          outcomeId: match.outcomeId,
-          outcomeName: match.name,
-          capturedPrice: match.price,
-          status: "PENDING",
-          usedBackup: false,
-        };
+      // Try each market ID in priority order (same difficulty range)
+      for (const candidateId of square.marketIds) {
+        const match = findOutcomeForMarket(odds, candidateId, oddsMin, oddsMax);
+        if (match) {
+          return {
+            position: square.position,
+            marketId: match.marketId,
+            marketName: match.marketName,
+            outcomeId: match.outcomeId,
+            outcomeName: match.name,
+            capturedPrice: match.price,
+            status: "PENDING",
+            usedBackup: false,
+          };
+        }
       }
 
-      // Primary failed — try a backup over/under market
-      const backup = findBackupOutcome(
-        odds,
-        square.difficulty.oddsMin,
-        square.difficulty.oddsMax,
-        usedMarketIds
-      );
+      // All candidate markets failed — try global backup pool
+      const backup = findBackupOutcome(odds, oddsMin, oddsMax, usedMarketIds);
 
       if (backup) {
-        usedMarketIds.add(backup.marketId); // prevent this backup being reused on the same sheet
+        usedMarketIds.add(backup.marketId);
         return {
           position: square.position,
           marketId: backup.marketId,
@@ -77,7 +71,7 @@ export async function lockPrices(gameId: number) {
 
       return {
         position: square.position,
-        marketId: square.marketId,
+        marketId: square.marketIds[0],
         marketName: null,
         outcomeId: null,
         outcomeName: null,

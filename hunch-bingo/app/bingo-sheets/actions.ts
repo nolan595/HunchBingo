@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export type SquareInput = {
   position: number;
-  marketId: number;
+  marketIds: number[];
   difficultyId: number;
 };
 
@@ -13,9 +13,14 @@ export async function createBingoSheet(name: string, squares: SquareInput[], seg
   if (!name.trim()) throw new Error("Sheet name is required");
   if (squares.length !== 9) throw new Error("Exactly 9 squares required");
 
-  const marketIds = squares.map((s) => s.marketId);
-  if (new Set(marketIds).size !== marketIds.length)
-    throw new Error("Duplicate market IDs are not allowed");
+  for (const s of squares) {
+    if (!s.marketIds.length) throw new Error(`Square ${s.position} needs at least one market ID`);
+  }
+
+  // Primary (first) market IDs must be unique across the 9 squares
+  const primaryIds = squares.map((s) => s.marketIds[0]);
+  if (new Set(primaryIds).size !== primaryIds.length)
+    throw new Error("Primary market IDs must be unique across all squares");
 
   await prisma.bingoSheet.create({
     data: {
@@ -24,7 +29,7 @@ export async function createBingoSheet(name: string, squares: SquareInput[], seg
       squares: {
         create: squares.map((s) => ({
           position: s.position,
-          marketId: s.marketId,
+          marketIds: s.marketIds,
           difficultyId: s.difficultyId,
         })),
       },
@@ -50,9 +55,13 @@ export async function updateBingoSheet(id: number, name: string, squares: Square
   if (!name.trim()) throw new Error("Sheet name is required");
   if (squares.length !== 9) throw new Error("Exactly 9 squares required");
 
-  const marketIds = squares.map(s => s.marketId);
-  if (new Set(marketIds).size !== marketIds.length)
-    throw new Error("Market IDs must be unique across all squares");
+  for (const s of squares) {
+    if (!s.marketIds.length) throw new Error(`Square ${s.position} needs at least one market ID`);
+  }
+
+  const primaryIds = squares.map(s => s.marketIds[0]);
+  if (new Set(primaryIds).size !== primaryIds.length)
+    throw new Error("Primary market IDs must be unique across all squares");
 
   const sheet = await prisma.bingoSheet.findUnique({ where: { id } });
   if (!sheet) throw new Error("Sheet not found");
@@ -67,7 +76,7 @@ export async function updateBingoSheet(id: number, name: string, squares: Square
         squares: {
           create: squares.map(s => ({
             position: s.position,
-            marketId: s.marketId,
+            marketIds: s.marketIds,
             difficultyId: s.difficultyId,
           })),
         },

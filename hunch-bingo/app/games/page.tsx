@@ -22,7 +22,10 @@ export default async function GamesPage({
       skip,
       take: PAGE_SIZE,
     }),
-    prisma.externalEvent.findMany({ orderBy: { name: "asc" } }),
+    prisma.externalEvent.findMany({
+      where: { matchDate: { not: null, gte: new Date() } },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

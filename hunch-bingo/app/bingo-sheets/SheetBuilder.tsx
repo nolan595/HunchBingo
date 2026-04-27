@@ -8,11 +8,12 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Plus, X } from "lucide-react";
 import type { OddsDifficulty, Segment } from "@/app/generated/prisma";
 import type { SquareInput } from "./actions";
 
-type SquareState = { marketId: string; difficultyId: string };
-const EMPTY: SquareState = { marketId: "", difficultyId: "" };
+type SquareState = { marketIds: string[]; difficultyId: string };
+const EMPTY: SquareState = { marketIds: [""], difficultyId: "" };
 
 const POSITION_LABELS = [
   "Top-left", "Top-center", "Top-right",
@@ -35,7 +36,7 @@ type Props = {
   segments: Segment[];
   defaultName?: string;
   defaultSegmentId?: number | null;
-  defaultSquares?: Array<{ marketId: number; difficultyId: number }>;
+  defaultSquares?: Array<{ marketIds: number[]; difficultyId: number }>;
   onSubmit: (name: string, squares: SquareInput[], segmentId: number | null) => Promise<void>;
   submitLabel?: string;
 };
@@ -56,17 +57,44 @@ export function SheetBuilder({
   const [squares, setSquares] = useState<SquareState[]>(
     defaultSquares
       ? defaultSquares.map(s => ({
-          marketId: String(s.marketId),
+          marketIds: s.marketIds.map(String),
           difficultyId: String(s.difficultyId),
         }))
-      : Array.from({ length: 9 }, () => ({ ...EMPTY }))
+      : Array.from({ length: 9 }, () => ({ marketIds: [""], difficultyId: "" }))
   );
   const [error, setError] = useState("");
 
-  function updateSquare(index: number, field: keyof SquareState, value: string) {
+  function updateMarketId(sqIndex: number, mktIndex: number, value: string) {
     setSquares(prev => {
       const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
+      const ids = [...next[sqIndex].marketIds];
+      ids[mktIndex] = value;
+      next[sqIndex] = { ...next[sqIndex], marketIds: ids };
+      return next;
+    });
+  }
+
+  function addMarketId(sqIndex: number) {
+    setSquares(prev => {
+      const next = [...prev];
+      next[sqIndex] = { ...next[sqIndex], marketIds: [...next[sqIndex].marketIds, ""] };
+      return next;
+    });
+  }
+
+  function removeMarketId(sqIndex: number, mktIndex: number) {
+    setSquares(prev => {
+      const next = [...prev];
+      const ids = next[sqIndex].marketIds.filter((_, i) => i !== mktIndex);
+      next[sqIndex] = { ...next[sqIndex], marketIds: ids.length ? ids : [""] };
+      return next;
+    });
+  }
+
+  function updateDifficulty(sqIndex: number, value: string) {
+    setSquares(prev => {
+      const next = [...prev];
+      next[sqIndex] = { ...next[sqIndex], difficultyId: value };
       return next;
     });
   }
@@ -74,16 +102,23 @@ export function SheetBuilder({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const marketIds = squares.map(s => s.marketId.trim()).filter(Boolean);
-    if (marketIds.length !== 9)        { setError("All 9 squares must have a Market ID"); return; }
+
+    // Every square needs at least one non-empty market ID
+    for (let i = 0; i < 9; i++) {
+      const ids = squares[i].marketIds.filter(id => id.trim());
+      if (!ids.length) { setError(`Square ${i + 1} needs at least one Market ID`); return; }
+    }
     if (squares.some(s => !s.difficultyId)) { setError("All 9 squares must have a difficulty"); return; }
-    if (new Set(marketIds).size !== 9) { setError("Market IDs must be unique across all squares"); return; }
+
+    // Primary (first) market IDs must be unique across the 9 squares
+    const primaryIds = squares.map(s => s.marketIds[0]?.trim()).filter(Boolean);
+    if (new Set(primaryIds).size !== 9) { setError("Primary (first) Market IDs must be unique across all squares"); return; }
 
     startTransition(async () => {
       try {
         await onSubmit(name, squares.map((s, i) => ({
           position: i + 1,
-          marketId: parseInt(s.marketId),
+          marketIds: s.marketIds.filter(id => id.trim()).map(id => parseInt(id)),
           difficultyId: parseInt(s.difficultyId),
         })), segmentId);
         router.push("/bingo-sheets");
@@ -93,7 +128,7 @@ export function SheetBuilder({
     });
   }
 
-  const filledCount = squares.filter(s => s.marketId.trim() && s.difficultyId).length;
+  const filledCount = squares.filter(s => s.marketIds.some(id => id.trim()) && s.difficultyId).length;
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-4 sm:space-y-6">
@@ -154,26 +189,51 @@ export function SheetBuilder({
         </div>
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {squares.map((sq, i) => {
-            const filled = sq.marketId.trim() && sq.difficultyId;
+            const filled = sq.marketIds.some(id => id.trim()) && sq.difficultyId;
             return (
               <div
                 key={i}
-                className={`rounded-xl border-2 p-2 sm:p-3 space-y-2 transition-all duration-150 ${
+                className={`rounded-xl border-2 p-2 sm:p-3 space-y-1.5 transition-all duration-150 ${
                   filled
                     ? "border-indigo-200 bg-indigo-50/40"
                     : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
                 }`}
               >
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sq {i + 1}</p>
-                <Input
-                  type="number"
-                  min={1}
-                  value={sq.marketId}
-                  onChange={e => updateSquare(i, "marketId", e.target.value)}
-                  placeholder="Market ID"
-                  className="h-7 sm:h-8 text-xs sm:text-sm font-mono font-bold tabular-nums px-2"
-                />
-                <Select value={sq.difficultyId} onValueChange={v => updateSquare(i, "difficultyId", v)}>
+                {/* Market IDs — priority ordered */}
+                <div className="space-y-1">
+                  {sq.marketIds.map((mktId, mi) => (
+                    <div key={mi} className="flex items-center gap-1">
+                      <span className="text-[9px] font-bold text-slate-400 tabular-nums w-3 shrink-0">{mi + 1}.</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={mktId}
+                        onChange={e => updateMarketId(i, mi, e.target.value)}
+                        placeholder={mi === 0 ? "Market ID" : "Fallback"}
+                        className="h-7 text-xs font-mono font-bold tabular-nums px-1.5 flex-1 min-w-0"
+                      />
+                      {sq.marketIds.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeMarketId(i, mi)}
+                          className="shrink-0 p-0.5 text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addMarketId(i)}
+                    className="flex items-center gap-1 text-[10px] font-semibold text-indigo-500 hover:text-indigo-700 transition-colors pt-0.5"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Fallback</span>
+                  </button>
+                </div>
+                <Select value={sq.difficultyId} onValueChange={v => updateDifficulty(i, v)}>
                   <SelectTrigger className="h-7 sm:h-8 text-[11px] sm:text-xs px-2">
                     <SelectValue placeholder="Diff…" />
                   </SelectTrigger>

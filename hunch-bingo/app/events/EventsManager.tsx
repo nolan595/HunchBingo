@@ -90,7 +90,7 @@ export function EventsManager({ registeredEvents }: Props) {
     setActiveIds(prev => { const n = new Set(prev); isActive ? n.delete(externalId) : n.add(externalId); return n; });
     try {
       if (isActive && dbId !== undefined) { await deleteEvent(dbId); registeredMap.delete(externalId); }
-      else await registerEvent(externalId, event.matchName);
+      else await registerEvent(externalId, event.matchName, event.matchDate);
     } catch {
       setActiveIds(prev => { const n = new Set(prev); isActive ? n.add(externalId) : n.delete(externalId); return n; });
     } finally {

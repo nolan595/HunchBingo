@@ -11,8 +11,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Mark Connect 3 · Admin",
-  description: "Mark Connect 3 simulation dashboard",
+  title: "Jack Connect 3 · Admin",
+  description: "Jack Connect 3 simulation dashboard",
 };
 
 export default async function RootLayout({

@@ -27,10 +27,11 @@ export async function createSingleGame(
 
   let event;
   try {
+    const matchDate = new Date(fixture.matchDate);
     event = await prisma.externalEvent.upsert({
       where: { externalEventId: String(fixture.eventId) },
-      update: { name: fixture.matchName },
-      create: { externalEventId: String(fixture.eventId), name: fixture.matchName },
+      update: { name: fixture.matchName, matchDate },
+      create: { externalEventId: String(fixture.eventId), name: fixture.matchName, matchDate },
     });
   } catch (e) {
     return { name: fixture.matchName, opened: false, error: e instanceof Error ? e.message : "DB error" };

@@ -101,7 +101,7 @@ export default async function EditBingoSheetPage({
           defaultName={sheet.name}
           defaultSegmentId={sheet.segmentId}
           defaultSquares={sheet.squares.map(s => ({
-            marketId: s.marketId,
+            marketIds: s.marketIds,
             difficultyId: s.difficultyId,
           }))}
           onSubmit={handleUpdate}

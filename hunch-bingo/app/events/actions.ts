@@ -8,11 +8,12 @@ export async function getEventsByDate(date: string) {
   return fetchEventsByDate(date);
 }
 
-export async function registerEvent(externalEventId: string, name: string) {
+export async function registerEvent(externalEventId: string, name: string, matchDate?: string) {
+  const matchDateValue = matchDate ? new Date(matchDate) : undefined;
   await prisma.externalEvent.upsert({
     where: { externalEventId },
-    update: { name },
-    create: { externalEventId, name },
+    update: { name, ...(matchDateValue && { matchDate: matchDateValue }) },
+    create: { externalEventId, name, matchDate: matchDateValue },
   });
   revalidatePath("/events");
   revalidatePath("/games");
